@@ -58,19 +58,19 @@ const tickets = ref([
 const dateCreacion = new Date(blade_vars.server_time*1000).toLocaleString();
 
 function aplicarSeleccion(obj,tidx){
-  if(window.getSelection().rangeCount == 0){
-    return;
+  const selecciones = window.getSelection();
+  for(let rangeIdx=0;rangeIdx<selecciones.rangeCount;rangeIdx++){
+    const seleccion  = selecciones.getRangeAt(rangeIdx);
+    const nodoInicio = seleccion.startContainer.parentNode;
+    const nodoFin    = seleccion.endContainer.parentNode;
+    if(nodoInicio.closest('.cuerpo') == null || nodoFin.closest('.cuerpo')   == null
+    || nodoInicio.closest(`#ticket${tidx}`) == null || nodoFin.closest(`#ticket${tidx}`) == null){
+      return;
+    }
+    const obj_clone = obj.cloneNode(true);
+    obj_clone.appendChild(seleccion.extractContents());
+    seleccion.insertNode(obj_clone);
   }
-  //@TODO: manejar multiples selecciones con CTRL
-  const seleccion = window.getSelection().getRangeAt(0);
-  const nodoInicio = seleccion.startContainer.parentNode;
-  const nodoFin    = seleccion.endContainer.parentNode;
-  if(nodoInicio.closest('.cuerpo') == null || nodoFin.closest('.cuerpo')   == null
-  || nodoInicio.closest(`#ticket${tidx}`) == null || nodoFin.closest(`#ticket${tidx}`) == null){
-    return;
-  }
-  obj.appendChild(seleccion.extractContents());
-  seleccion.insertNode(obj);
 }
 function negrita(event,tidx){  
   aplicarSeleccion(document.createElement('b'),tidx);
