@@ -83,7 +83,7 @@ function subrayar(event,tidx){
 }
 function color(event,tidx){
   const span = document.createElement('span');
-  span.style.color = event.target.parentNode.querySelector('.colorpicker').value
+  span.style.color = tickets.value[tidx].color;
   aplicarSeleccion(span,tidx);
 }
 
@@ -306,7 +306,7 @@ onMounted(function(){
         <button @click="subrayar($event,tidx)" v-if="ticket.editando"><u>Sub</u></button>
         <button @click="color($event,tidx)" v-if="ticket.editando">
           <span>Color</span>
-          <input class="colorpicker" type="color">
+          <input class="colorpicker" type="color" v-model="ticket.color">
         </button>
       </div>
       <div class="cuerpo"
