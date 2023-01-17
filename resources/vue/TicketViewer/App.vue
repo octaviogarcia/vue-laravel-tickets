@@ -82,7 +82,9 @@ function subrayar(event,tidx){
   aplicarSeleccion(document.createElement('u'),tidx);
 }
 function color(event,tidx){
-  aplicarSeleccion(document.createElement('small'),tidx);
+  const span = document.createElement('span');
+  span.style.color = event.target.parentNode.querySelector('.colorpicker').value
+  aplicarSeleccion(span,tidx);
 }
 
 function to_html(texto){
@@ -250,6 +252,7 @@ onMounted(function(){
     tickets.value[tidx].texto_html = to_html(tickets.value[tidx].texto);
   }
 });
+
 </script>
 
 <template>
@@ -301,7 +304,10 @@ onMounted(function(){
         <button @click="negrita($event,tidx)" v-if="ticket.editando"><b>N</b></button>
         <button @click="cursiva($event,tidx)" v-if="ticket.editando"><i>Curs</i></button>
         <button @click="subrayar($event,tidx)" v-if="ticket.editando"><u>Sub</u></button>
-        <button @click="color($event,tidx)" v-if="ticket.editando">Color &#9632;</button>
+        <button @click="color($event,tidx)" v-if="ticket.editando">
+          <span>Color</span>
+          <input class="colorpicker" type="color">
+        </button>
       </div>
       <div class="cuerpo"
         :contenteditable="ticket.editando? true : null"

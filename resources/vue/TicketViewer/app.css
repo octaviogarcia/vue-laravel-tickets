@@ -84,3 +84,9 @@ div {
   overflow-wrap: anywhere;
   word-break: break-all;
 }
+
+#listaTickets .ticket .colorpicker {
+  padding: 0px;
+  width: 1em;
+  height: 0.85em;
+}
