@@ -57,13 +57,32 @@ const tickets = ref([
 
 const dateCreacion = new Date(blade_vars.server_time*1000).toLocaleString();
 
-function negrita(){
+function aplicarSeleccion(obj,tidx){
+  if(window.getSelection().rangeCount == 0){
+    return;
+  }
+  //@TODO: manejar multiples selecciones con CTRL
+  const seleccion = window.getSelection().getRangeAt(0);
+  const nodoInicio = seleccion.startContainer.parentNode;
+  const nodoFin    = seleccion.endContainer.parentNode;
+  if(nodoInicio.closest('.cuerpo') == null || nodoFin.closest('.cuerpo')   == null
+  || nodoInicio.closest(`#ticket${tidx}`) == null || nodoFin.closest(`#ticket${tidx}`) == null){
+    return;
+  }
+  obj.appendChild(seleccion.extractContents());
+  seleccion.insertNode(obj);
 }
-function cursiva(){
+function negrita(event,tidx){  
+  aplicarSeleccion(document.createElement('b'),tidx);
 }
-function subrayar(){
+function cursiva(event,tidx){
+  aplicarSeleccion(document.createElement('i'),tidx);
 }
-function color(){
+function subrayar(event,tidx){
+  aplicarSeleccion(document.createElement('u'),tidx);
+}
+function color(event,tidx){
+  aplicarSeleccion(document.createElement('small'),tidx);
 }
 
 function to_html(texto){
@@ -279,10 +298,10 @@ onMounted(function(){
       </div>
       <hr style="width: 97%;">
       <div class="enriquecer">
-        <button @click="negrita"><b>N</b></button>
-        <button @click="cursiva"><i>Curs</i></button>
-        <button @click="subrayar"><u>Sub</u></button>
-        <button @click="color">Color &#9632;</button>
+        <button @click="negrita($event,tidx)" v-if="ticket.editando"><b>N</b></button>
+        <button @click="cursiva($event,tidx)" v-if="ticket.editando"><i>Curs</i></button>
+        <button @click="subrayar($event,tidx)" v-if="ticket.editando"><u>Sub</u></button>
+        <button @click="color($event,tidx)" v-if="ticket.editando">Color &#9632;</button>
       </div>
       <div class="cuerpo"
         :contenteditable="ticket.editando? true : null"
