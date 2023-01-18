@@ -55,6 +55,8 @@ const tickets = ref([
   },
 ]);
 
+const tickets_v = ref(tickets.value.map(function(){return {};}));
+
 const dateCreacion = new Date(blade_vars.server_time*1000).toLocaleString();
 
 function aplicarSeleccion(obj,tidx){
@@ -233,23 +235,26 @@ function to_json(html){
 }
 
 function guardar(event,tidx){
-  const ticket = tickets.value[tidx];
-  ticket.editando = !ticket.editando;
-  if(ticket.editando){
+  const ticket_v = tickets_v.value[tidx];
+  ticket_v.editando = !ticket_v.editando;
+  if(ticket_v.editando){
     return;
   }
+  const html = document.querySelector(`#ticket${tidx} .cuerpo`).innerHTML;
+  tickets_v.value[tidx].texto_html = html;
   //Si guardo, cambio la representacion json
-  ticket.texto = to_json(document.querySelector(`#ticket${tidx} .cuerpo`).innerHTML);
+  tickets.value[tidx].texto = to_json(html);
 }
 
 function cancelar(event,tidx){
-  const ticket = tickets.value[tidx];
-  document.querySelector(`#ticket${tidx} .cuerpo`).innerHTML = ticket.texto_html;
+  const ticket_v = tickets_v.value[tidx];
+  document.querySelector(`#ticket${tidx} .cuerpo`).innerHTML = ticket_v.texto_html;
+  ticket_v.editando = false;
 }
 
 onMounted(function(){
   for(const tidx in tickets.value){
-    tickets.value[tidx].texto_html = to_html(tickets.value[tidx].texto);
+    tickets_v.value[tidx].texto_html = to_html(tickets.value[tidx].texto);    
   }
 });
 
@@ -273,11 +278,11 @@ onMounted(function(){
         </div>
         <div>
           <div style="float: left;width: 10%;text-align: center;">Titulo</div>
-          <input style="width: 80%;" v-model="ticket.titulo" :disabled="!ticket.editando">
+          <input style="width: 80%;" v-model="ticket.titulo" :disabled="!tickets_v[tidx].editando">
         </div>
         <div>
           <div style="float: left;width: 10%;text-align: center;">Estado</div>
-          <select style="width: 80%;" v-model="ticket.estado" :disabled="!ticket.editando">
+          <select style="width: 80%;" v-model="ticket.estado" :disabled="!tickets_v[tidx].editando">
             <option></option>
             <option>ABIERTO</option>
             <option>SOLUCIONADO</option>
@@ -287,13 +292,13 @@ onMounted(function(){
       </div>
       <div>
         <div style="float: left;width: 10%;text-align: center;">Autor</div>
-        <input style="width: 80%;" v-model="ticket.autor" :disabled="!ticket.editando">
+        <input style="width: 80%;" v-model="ticket.autor" :disabled="!tickets_v[tidx].editando">
       </div>
       <div v-if="tidx==0">
         <div style="float: left;width: 10%;text-align: center;">Tags</div>
         <div class="taglist">
           <div v-for="(tag,tagidx) in ticket.tags" :key="tagidx" 
-            :contenteditable="ticket.editando? true : null"
+            :contenteditable="tickets_v[tidx].editando? true : null"
             @input="(event) => ticket.tags[tagidx] = event.target.textContent">
             {{ tag }}
           </div>
@@ -301,24 +306,24 @@ onMounted(function(){
       </div>
       <hr style="width: 97%;">
       <div class="enriquecer">
-        <button @click="negrita($event,tidx)" v-if="ticket.editando"><b>N</b></button>
-        <button @click="cursiva($event,tidx)" v-if="ticket.editando"><i>Curs</i></button>
-        <button @click="subrayar($event,tidx)" v-if="ticket.editando"><u>Sub</u></button>
-        <button @click="color($event,tidx)" v-if="ticket.editando">
+        <button @click="negrita($event,tidx)" v-if="tickets_v[tidx].editando"><b>N</b></button>
+        <button @click="cursiva($event,tidx)" v-if="tickets_v[tidx].editando"><i>Curs</i></button>
+        <button @click="subrayar($event,tidx)" v-if="tickets_v[tidx].editando"><u>Sub</u></button>
+        <button @click="color($event,tidx)" v-if="tickets_v[tidx].editando">
           <span>Color</span>
           <input class="colorpicker" type="color" v-model="ticket.color">
         </button>
       </div>
       <div class="cuerpo"
-        :contenteditable="ticket.editando? true : null"
-        v-html="ticket.texto_html">
+        :contenteditable="tickets_v[tidx].editando? true : null"
+        v-html="tickets_v[tidx].texto_html">
       </div>
       <div class="acciones">
-        <button @click="guardar($event,tidx)">{{ ticket.editando? 'GUARDAR' : 'EDITAR'}}</button>
-        <button v-if="ticket.editando" @click="cancelar($event,tidx)">CANCELAR</button>
-        <button v-if="ticket.editando">ADJUNTAR</button>
-        <button v-if="ticket.editando">ELIMINAR</button>
-        <button v-if="!ticket.editando">HISTORIAL</button>
+        <button @click="guardar($event,tidx)">{{ tickets_v[tidx].editando? 'GUARDAR' : 'EDITAR'}}</button>
+        <button v-if="tickets_v[tidx].editando" @click="cancelar($event,tidx)">CANCELAR</button>
+        <button v-if="tickets_v[tidx].editando">ADJUNTAR</button>
+        <button v-if="tickets_v[tidx].editando">ELIMINAR</button>
+        <button v-if="!tickets_v[tidx].editando">HISTORIAL</button>
       </div>
     </div>
   </div>
