@@ -47,6 +47,19 @@ const tickets = ref([
     {
       tipo: 'negrita',
       texto: 'negrita',
+    },
+    {
+      tipo: 'subrayar',
+      texto: 'subrayar',
+    },
+    {
+      tipo: 'cursiva',
+      texto: 'cursiva',
+    },
+    {
+      tipo: 'color',
+      color: 'red',
+      texto: 'color'
     }]
   },
   {
@@ -74,19 +87,32 @@ function aplicarSeleccion(obj,tidx){
     seleccion.insertNode(obj_clone);
   }
 }
-function negrita(event,tidx){  
-  aplicarSeleccion(document.createElement('b'),tidx);
+
+
+const estilos = {
+  parrafo: {
+    elemento: () => document.createElement('div')
+  },
+  negrita: {
+    elemento: () => document.createElement('b')
+  },
+  cursiva: {
+    elemento: () => document.createElement('i')
+  },
+  subrayar: {
+    elemento: () => document.createElement('u')
+  },
+  color: {
+    elemento: function(tidx){
+      const span = document.createElement('span');
+      span.style.color = tickets_v.value[tidx].color;
+      return span;
+    }
+  },
 }
-function cursiva(event,tidx){
-  aplicarSeleccion(document.createElement('i'),tidx);
-}
-function subrayar(event,tidx){
-  aplicarSeleccion(document.createElement('u'),tidx);
-}
-function color(event,tidx){
-  const span = document.createElement('span');
-  span.style.color = tickets.value[tidx].color;
-  aplicarSeleccion(span,tidx);
+
+function aplicarEstilo(event,tidx,tipo){
+  return aplicarSeleccion(estilos[tipo].elemento(tidx),tidx);
 }
 
 function to_html(texto){
@@ -124,114 +150,61 @@ function to_html(texto){
   return open+to_html(texto.texto)+close;
 }
 
-function to_json(html){
-  let idx = 0;
+function to_json_impl(parent){
   const json = [];
-  while(true){
-    {
-      const old_idx = idx;
-      idx = html.slice(idx).search(/(<div>|<b>|<i>|<u>|<span)/g);
-      if(idx == -1){
-        if(json.length == 0) return html.slice(old_idx);
-        else if(html.slice(old_idx).length > 0){
-          json.push({
-            texto: html.slice(old_idx)
-          });
-          return json;
+  for(const node of parent.childNodes){
+    switch(node.nodeName){
+      case 'DIV':
+        json.push({
+          tipo: 'parrafo',
+          texto: to_json(node)
+        });
+      case 'B':{
+        json.push({
+          tipo: 'negrita',
+          texto: to_json(node)
+        });
+      }break;
+      case 'I':{
+        json.push({
+          tipo: 'cursiva',
+          texto: to_json(node)
+        });
+      }break;
+      case 'U':{
+        json.push({
+          tipo: 'subrayar',
+          texto: to_json(node)
+        });
+      }break;
+      case 'SPAN':{
+        json.push({
+          tipo: 'color',
+          color: node.style.color? node.style.color : 'white',
+          texto: to_json(node)
+        });
+      }break;
+      case '#text':{
+        if(node.textContent == '') continue;
+        if(parent.childNodes.length == 1){
+          return node.textContent;
         }
-        else return json;
-      }
-      idx = old_idx + idx;
-    }
-    const ss = html.slice(idx);
-    if(ss.startsWith('<div>')){
-      const begin = '<div>'.length;
-      const end   = ss.search('</div>');
-      if(end != -1){        
-        idx += end + '</div>'.length;
-      }
-      const childss = ss.substring(begin,end == -1? undefined : end);
-      json.push({
-        tipo: 'parrafo',
-        texto: to_json(childss),
-      });
-      if(end == -1){
-        return json;
-      }
-    }
-    else if(ss.startsWith('<b>')){
-      const begin = '<b>'.length;
-      const end   = ss.search('</b>');
-      if(end != -1){
-        idx += end + '</b>'.length;
-      }
-      const childss = ss.substring(begin,end == -1? undefined : end);
-      json.push({
-        tipo: 'negrita',
-        texto: to_json(childss),
-      });
-      if(end == -1){
-        return json;
-      }
-    }
-    else if(ss.startsWith('<i>')){
-      const begin = '<i>'.length;
-      const end   = ss.search('</i>');
-      if(end != -1){
-        idx += end + '</i>'.length;
-      }
-      const childss = ss.substring(begin,end == -1? undefined : end);
-      json.push({
-        tipo: 'cursiva',
-        texto: to_json(childss),
-      });
-      if(end == -1){
-        return json;
-      }
-    }
-    else if(ss.startsWith('<u>')){
-      const begin = '<u>'.length;
-      const end   = ss.search('</u>');
-      if(end != -1){
-        idx += end + '</u>'.length;
-      }
-      const childss = ss.substring(begin,end == -1? undefined : end);
-      json.push({
-        tipo: 'subrayar',
-        texto: to_json(childss),
-      });
-      if(end == -1){
-        return json;
-      }
-    }
-    else if(ss.startsWith('<span')){
-      const color_begin = ss.search('style="color:')+'style="color:'.length;
-      const color_end = ss.search(';">');
-      const color = color_end != -1? ss.substring(color_begin,color_end) : 'white';
-      const begin = color_end+';">'.length;
-      const end   = ss.search('</span>');
-      if(end != -1){
-        idx += end + '</span>'.length;
-      }
-      const childss = ss.substring(begin,end == -1? undefined : end);
-      json.push({
-        tipo: 'color',
-        color: color,
-        texto: to_json(childss),
-      });
-      if(end == -1){
-        return json;
-      }
-    }
-    else{
-      console.log('Unsupported tag');
-      json.push({
-        texto: ss,
-      });
-      return json;
+        json.push(node.textContent);
+      }break;
+      default:{
+        console.log(node.nodeName);
+        json.push({//Escapar <>?
+          texto: node.innerHTML? node.innerHTML : node.textContent
+        })
+      }break;
     }
   }
   return json;
+}
+
+function to_json(cuerpo){
+  if(cuerpo == null) return [];
+  return to_json_impl(cuerpo);
 }
 
 function guardar(event,tidx){
@@ -240,10 +213,9 @@ function guardar(event,tidx){
   if(ticket_v.editando){
     return;
   }
-  const html = document.querySelector(`#ticket${tidx} .cuerpo`).innerHTML;
-  tickets_v.value[tidx].texto_html = html;
-  //Si guardo, cambio la representacion json
-  tickets.value[tidx].texto = to_json(html);
+  const cuerpo = document.querySelector(`#ticket${tidx} .cuerpo`);
+  tickets_v.value[tidx].texto_html = cuerpo? cuerpo.innerHTML : '';
+  tickets.value[tidx].texto = to_json(cuerpo);
 }
 
 function cancelar(event,tidx){
@@ -306,12 +278,12 @@ onMounted(function(){
       </div>
       <hr style="width: 97%;">
       <div class="enriquecer">
-        <button @click="negrita($event,tidx)" v-if="tickets_v[tidx].editando"><b>N</b></button>
-        <button @click="cursiva($event,tidx)" v-if="tickets_v[tidx].editando"><i>Curs</i></button>
-        <button @click="subrayar($event,tidx)" v-if="tickets_v[tidx].editando"><u>Sub</u></button>
-        <button @click="color($event,tidx)" v-if="tickets_v[tidx].editando">
+        <button @click="aplicarEstilo($event,tidx,'negrita')" v-if="tickets_v[tidx].editando"><b>N</b></button>
+        <button @click="aplicarEstilo($event,tidx,'cursiva')" v-if="tickets_v[tidx].editando"><i>Curs</i></button>
+        <button @click="aplicarEstilo($event,tidx,'subrayar')" v-if="tickets_v[tidx].editando"><u>Sub</u></button>
+        <button @click="aplicarEstilo($event,tidx,'color')" v-if="tickets_v[tidx].editando">
           <span>Color</span>
-          <input class="colorpicker" type="color" v-model="ticket.color">
+          <input class="colorpicker" type="color" v-model="tickets_v[tidx].color">
         </button>
       </div>
       <div class="cuerpo"
