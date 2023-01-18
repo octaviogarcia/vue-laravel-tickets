@@ -222,6 +222,7 @@ function guardar(event,tidx){
   tickets.value[tidx].texto = json;
   tickets_v.value[tidx].texto_html = html;
   cuerpo.innerHTML = html;
+  tickets.value[tidx].tags = tickets.value[tidx].tags.filter((s) => s.length > 0);
 }
 
 function cancelar(event,tidx){
@@ -275,10 +276,18 @@ onMounted(function(){
       <div v-if="tidx==0">
         <div style="float: left;width: 10%;text-align: center;">Tags</div>
         <div class="taglist">
-          <div v-for="(tag,tagidx) in ticket.tags" :key="tagidx" 
-            :contenteditable="tickets_v[tidx].editando? true : null"
-            @input="(event) => ticket.tags[tagidx] = event.target.textContent">
-            {{ tag }}
+          <div style="float: left;width: 5em;" v-for="(tag,tagidx) in ticket.tags" :key="tagidx" >
+            <div class="tag" 
+              :contenteditable="tickets_v[tidx].editando? true : null"
+              @input="(event) => ticket.tags[tagidx] = event.target.textContent">{{ tag }}</div>
+            <button 
+              v-if="tickets_v[tidx].editando"
+              style="font-size: 1em;width: 1em;background: rgba(0,0,0,0);margin: 0px;padding: 0px;border: 0px;text-shadow: 0px 0px 4px white;"
+              @click="ticket.tags.splice(tidx,1)"
+            >x</button>
+          </div>
+          <div style="width: 5%;float: left;" v-if="tickets_v[tidx].editando">
+            <button style="width: 100%;" @click="ticket.tags.push('')">+</button>
           </div>
         </div>
       </div>

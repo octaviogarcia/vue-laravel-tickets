@@ -68,14 +68,16 @@ div {
   height: 500px;
 }
 
-#listaTickets .ticket .taglist > * {
+#listaTickets .ticket .taglist .tag {
   float: left;
-  width: 10%;
+  width: 3em;
   overflow-wrap: anywhere;
   word-break: break-all;
   border: 1px solid grey;
   border-radius: 10px;
   text-align: center;
+  max-height: 3em;
+  overflow-y: scroll;
 }
 
 #listaTickets .ticket .acciones > * {
