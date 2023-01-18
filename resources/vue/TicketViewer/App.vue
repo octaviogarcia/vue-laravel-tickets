@@ -279,7 +279,7 @@ onMounted(function(){
           <div style="float: left;width: 5em;" v-for="(tag,tagidx) in ticket.tags" :key="tagidx" >
             <div class="tag" 
               :contenteditable="tickets_v[tidx].editando? true : null"
-              @input="(event) => ticket.tags[tagidx] = event.target.textContent">{{ tag }}</div>
+              @focusout="(event) => ticket.tags[tagidx] = event.target.textContent">{{ tag }}</div>
             <button 
               v-if="tickets_v[tidx].editando"
               style="font-size: 1em;width: 1em;background: rgba(0,0,0,0);margin: 0px;padding: 0px;border: 0px;text-shadow: 0px 0px 4px white;"
