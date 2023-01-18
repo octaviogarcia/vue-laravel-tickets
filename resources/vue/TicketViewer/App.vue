@@ -105,7 +105,8 @@ const estilos = {
   color: {
     elemento: function(tidx){
       const span = document.createElement('span');
-      span.style.color = tickets_v.value[tidx].color;
+      const color_v = tickets_v.value[tidx].color;
+      span.style.color = color_v? color_v : '#000000';
       return span;
     }
   },
@@ -116,7 +117,7 @@ function aplicarEstilo(event,tidx,tipo){
 }
 
 function to_html(texto){
-  if(typeof texto == 'string') return texto;
+  if(typeof texto == 'string') return texto.replaceAll('<','&lt;').replaceAll('>','&gt;');
   if(typeof texto != 'object') throw 'Type unsupported '+texto;
   if(Array.isArray(texto)){
     return texto.map(to_html).join('');
@@ -186,15 +187,17 @@ function to_json_impl(parent){
       }break;
       case '#text':{
         if(node.textContent == '') continue;
+        const texto = node.textContent.replaceAll('<','&lt;').replaceAll('>','&gt;')
         if(parent.childNodes.length == 1){
-          return node.textContent;
+          return texto;
         }
-        json.push(node.textContent);
+        json.push(texto);
       }break;
       default:{
         console.log(node.nodeName);
-        json.push({//Escapar <>?
-          texto: node.innerHTML? node.innerHTML : node.textContent
+        const texto = node.outerHTML? node.outerHTML : node.textContent;
+        json.push({
+          texto: texto.replaceAll('<','&lt;').replaceAll('>','&gt;')
         })
       }break;
     }
@@ -214,8 +217,11 @@ function guardar(event,tidx){
     return;
   }
   const cuerpo = document.querySelector(`#ticket${tidx} .cuerpo`);
-  tickets_v.value[tidx].texto_html = cuerpo? cuerpo.innerHTML : '';
-  tickets.value[tidx].texto = to_json(cuerpo);
+  const json = to_json(cuerpo);
+  const html = to_html(json);
+  tickets.value[tidx].texto = json;
+  tickets_v.value[tidx].texto_html = html;
+  cuerpo.innerHTML = html;
 }
 
 function cancelar(event,tidx){
