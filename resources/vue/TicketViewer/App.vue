@@ -90,16 +90,20 @@ function aplicarSeleccion(obj,tidx){
 
 const estilos = {
   parrafo: {
-    elemento: () => document.createElement('div')
+    elemento: () => document.createElement('div'),
+    tags: () => ['<div>','</div>'],
   },
   negrita: {
-    elemento: () => document.createElement('b')
+    elemento: () => document.createElement('b'),
+    tags: () => ['<b>','</b>'],
   },
   cursiva: {
-    elemento: () => document.createElement('i')
+    elemento: () => document.createElement('i'),
+    tags: () => ['<i>','</i>'],
   },
   subrayar: {
-    elemento: () => document.createElement('u')
+    elemento: () => document.createElement('u'),
+    tags: () => ['<u>','</u>'],
   },
   color: {
     elemento: function(tidx){
@@ -107,8 +111,45 @@ const estilos = {
       const color_v = tickets_v.value[tidx].color;
       span.style.color = color_v? color_v : '#000000';
       return span;
-    }
+    },
+    tags: function(texto){
+      return ['<span style="color:'+(texto.color? texto.color : 'white')+';">','</span>'];
+    },
   },
+}
+const nodeName_a_estilo = {
+    DIV: {
+      to_obj: (node) => ({
+        tipo: 'parrafo',
+        texto: to_json(node),
+      }),
+    },
+    B: {
+      to_obj: (node) => ({
+        tipo: 'negrita',
+        texto: to_json(node)
+      }),
+    },
+    I: {
+      to_obj: (node) => ({
+        tipo: 'cursiva',
+        texto: to_json(node)
+      }),
+    },
+    U: {
+      to_obj: (node) => ({
+        tipo: 'subrayar',
+        texto: to_json(node)
+      }),
+    },
+    SPAN: {
+      to_obj: (node) => ({
+        tipo: 'color',
+        color: node.style.color? node.style.color : 'white',
+        texto: to_json(node)
+      }),
+      estilo: 'color',
+    }
 }
 
 function aplicarEstilo(event,tidx,tipo){
@@ -123,29 +164,8 @@ function to_html(texto){
   }
   let open  = '';
   let close = '';
-  switch(texto.tipo){
-    case 'parrafo':{
-      open  = '<div>';
-      close = '</div>';
-    }break;
-    case 'negrita':{
-      open  = '<b>';
-      close = '</b>';
-    }break;
-    case 'cursiva':{
-      open  = '<i>'
-      close = '</i>';
-    }break;
-    case 'subrayar':{
-      open  = '<u>';
-      close = '</u>';
-    }break;
-    case 'color':{
-      open  = '<span style="color:'+(texto.color ?? 'white')+';">';
-      close = '</span>';
-    }break;
-    default:{
-    }break;
+  if(texto.tipo in estilos){
+    [open,close] = estilos[texto.tipo].tags(texto);
   }
   return open+to_html(texto.texto)+close;
 }
@@ -153,50 +173,23 @@ function to_html(texto){
 function to_json_impl(parent){
   const json = [];
   for(const node of parent.childNodes){
-    switch(node.nodeName){
-      case 'DIV':
-        json.push({
-          tipo: 'parrafo',
-          texto: to_json(node)
-        });
-      case 'B':{
-        json.push({
-          tipo: 'negrita',
-          texto: to_json(node)
-        });
-      }break;
-      case 'I':{
-        json.push({
-          tipo: 'cursiva',
-          texto: to_json(node)
-        });
-      }break;
-      case 'U':{
-        json.push({
-          tipo: 'subrayar',
-          texto: to_json(node)
-        });
-      }break;
-      case 'SPAN':{
-        json.push({
-          tipo: 'color',
-          color: node.style.color? node.style.color : 'white',
-          texto: to_json(node)
-        });
-      }break;
-      case '#text':{
-        if(node.textContent == '') continue;
-        const texto = node.textContent.replaceAll('<','&lt;').replaceAll('>','&gt;')
-        if(parent.childNodes.length == 1){
-          return texto;
-        }
-        json.push(texto);
-      }break;
-      default:{
-        const texto = node.outerHTML? node.outerHTML : node.textContent;
-        json.push(texto.replaceAll('<','&lt;').replaceAll('>','&gt;'));
-      }break;
+    if(node.nodeName in nodeName_a_estilo){
+      json.push(nodeName_a_estilo[node.nodeName].to_obj(node));
+      continue;
     }
+    
+    if(node.nodeName == '#text'){
+      if(node.textContent == '') continue;
+      const texto = node.textContent.replaceAll('<','&lt;').replaceAll('>','&gt;')
+      if(parent.childNodes.length == 1){
+        return texto;
+      }
+      json.push(texto);
+      continue;
+    }
+    
+    const texto = node.outerHTML? node.outerHTML : node.textContent;
+    json.push(texto.replaceAll('<','&lt;').replaceAll('>','&gt;'));
   }
   return json;
 }
