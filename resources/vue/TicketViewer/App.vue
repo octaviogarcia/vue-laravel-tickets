@@ -303,7 +303,7 @@ onMounted(function(){
             <button 
               v-if="ticket_v.editando"
               style="font-size: 1em;width: 1em;background: rgba(0,0,0,0);margin: 0px;padding: 0px;border: 0px;text-shadow: 0px 0px 4px white;"
-              @click="ticket_v.tags.splice(tidx,1)"
+              @click="ticket_v.tags.splice(tagidx,1)"
             >x</button>
           </div>
           <div style="width: 5%;float: left;" v-if="ticket_v.editando">
