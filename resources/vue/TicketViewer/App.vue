@@ -65,6 +65,16 @@ const tickets = ref([
   {
     autor: 'Autooooor3',
     texto: 'Textoooooo3',
+    archivos: [
+      {
+        nombre: 'foto1.jpg',
+        url: 'archivos/foto1.jpg',
+      },
+      {
+        nombre: 'documento.png',
+        url: 'archivos/foto1.png',
+      }
+    ]
   },
 ]);
 
@@ -243,10 +253,44 @@ function copyObject(from,to,keysfrom){
   }
 }
 
+function adjuntar(event,ticket_v){
+  if(ticket_v.editando){
+    ticket_v.file_select.dispatchEvent(new MouseEvent('click'));
+  }
+}
+
+function seleccionArchivos(event,ticket_v){
+  for(const file of (event.target.files ?? [])){
+    if(!ticket_v.archivos){
+      ticket_v.archivos = [];
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(){
+      const byteCharacters = reader.result;
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: file.type });
+      
+      ticket_v.archivos.push({
+        nombre: file.name,
+        url: window.URL.createObjectURL(blob),
+        nuevo: true,
+        file: file,
+      });
+    }
+    reader.readAsBinaryString(file);
+  }
+}
+
 onMounted(function(){
   nextTick(function(){
     for(const idx in tickets_v.value){
       tickets_v.value[idx].cuerpo = document.querySelector(`#ticket${idx} .cuerpo`);
+      tickets_v.value[idx].file_select = document.querySelector(`#ticket${idx} .file_select`);
     }
   });
 });
@@ -293,11 +337,7 @@ onMounted(function(){
             <div class="tag" 
               :contenteditable="ticket_v.editando? true : null"
               @focusout="(event) => ticket_v.tags[tagidx] = event.target.textContent">{{ tag }}</div>
-            <button 
-              v-if="ticket_v.editando"
-              style="font-size: 1em;width: 1em;background: rgba(0,0,0,0);margin: 0px;padding: 0px;border: 0px;text-shadow: 0px 0px 4px white;"
-              @click="ticket_v.tags.splice(tagidx,1)"
-            >x</button>
+            <button v-if="ticket_v.editando" class="cruz_borrar" @click="ticket_v.tags.splice(tagidx,1)">x</button>
           </div>
           <div style="width: 5%;float: left;" v-if="ticket_v.editando">
             <button style="width: 100%;" @click="ticket_v.tags.push('')">+</button>
@@ -318,10 +358,23 @@ onMounted(function(){
         :contenteditable="ticket_v.editando? true : null"
         v-html="to_html(ticket_v.texto)">
       </div>
+      <div v-if="ticket_v.archivos">
+        <div>Archivos</div>
+        <div>
+          <div class="archivo" v-for="(a,aidx) in ticket_v.archivos">
+            <a :href="a.url" target="_blank" :title="a.title" :download="a.nombre">{{ a.nombre }}</a>
+            <button v-if="ticket_v.editando" class="cruz_borrar" @click="ticket_v.archivos.splice(aidx,1)">x</button>
+          </div>
+        </div>
+      </div>
       <div class="acciones">
         <button @click="guardar($event,tidx)">{{ ticket_v.editando? 'GUARDAR' : 'EDITAR'}}</button>
         <button v-if="ticket_v.editando" @click="cancelar($event,tidx)">CANCELAR</button>
-        <button v-if="ticket_v.editando">ADJUNTAR</button>
+        <button v-if="ticket_v.editando" @click="adjuntar($event,ticket_v)">ADJUNTAR</button>
+        <input type="file" multiple  
+          class="file_select" 
+          style="position: absolute; top: -1000px; left: -1000px;visiblity: hidden;"
+          @change="seleccionArchivos($event,ticket_v)">
         <button v-if="ticket_v.editando">ELIMINAR</button>
         <button v-if="!ticket_v.editando">HISTORIAL</button>
       </div>
