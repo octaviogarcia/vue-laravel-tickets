@@ -213,7 +213,8 @@ function guardar(event,tidx){
   const ticket_v = tickets_v.value[tidx];
   const ticket   = tickets.value[tidx];
   ticket_v.editando = !ticket_v.editando;
-  if(ticket_v.editando){
+  if(ticket_v.editando && tidx == 0){
+    ticket_v.tags.push('');
     return;
   }
   const cuerpo = ticket_v.cuerpo;
@@ -286,6 +287,14 @@ function seleccionArchivos(event,ticket_v){
   }
 }
 
+function cambio_tag(event,ticket_v,tagidx){
+  ticket_v.tags[tagidx] = event.target.textContent;
+  console.log(tagidx);
+  if(tagidx == (ticket_v.tags.length-1) && event.target.textContent != ''){
+    ticket_v.tags.push('');
+  }
+}
+
 onMounted(function(){
   nextTick(function(){
     for(const idx in tickets_v.value){
@@ -300,47 +309,44 @@ onMounted(function(){
   <div id="listaTickets">
     <div :id="`ticket${tidx}`" class="ticket" v-for="(ticket_v,tidx) in tickets_v" :key="tidx">
       <div v-if="tidx==0">
-        <div>
-          <div style="float:left;width: 10%;text-align: center;">Número</div>
-          <div style="width: 80%;">{{ ticket_v.numero ?? '-NUEVO-' }}</div>
+        <div class="cabecera_ticket">
+          <div>Número</div>
+          <div>{{ ticket_v.numero ?? '-NUEVO-' }}</div>
         </div>
-        <div>
-          <div style="float:left;width: 10%;text-align: center;">Creado</div>
-          <div style="width: 80%;">{{ ticket_v.created_at ?? dateCreacion }}</div>
+        <div class="cabecera_ticket">
+          <div>Creado</div>
+          <div>{{ ticket_v.created_at ?? dateCreacion }}</div>
         </div>
-        <div>
-          <div style="float:left;width: 10%;text-align: center;">Modif.</div>
-          <div style="width: 80%;">{{ ticket_v.modified_at ?? '--'}}</div>
+        <div class="cabecera_ticket">
+          <div>Modificado</div>
+          <div>{{ ticket_v.modified_at ?? '--'}}</div>
         </div>
-        <div>
-          <div style="float: left;width: 10%;text-align: center;">Titulo</div>
-          <input style="width: 80%;" v-model="ticket_v.titulo" :disabled="!ticket_v.editando">
+        <div class="cabecera_ticket">
+          <div>Titulo</div>
+          <div><input style="width: 100%;" v-model="ticket_v.titulo" :disabled="!ticket_v.editando"></div>
         </div>
-        <div>
-          <div style="float: left;width: 10%;text-align: center;">Estado</div>
-          <select style="width: 80%;" v-model="ticket_v.estado" :disabled="!ticket_v.editando">
+        <div class="cabecera_ticket">
+          <div>Estado</div>
+          <div><select style="width: 100%;" v-model="ticket_v.estado" :disabled="!ticket_v.editando">
             <option></option>
             <option>ABIERTO</option>
             <option>SOLUCIONADO</option>
             <option>CERRADO</option>
-          </select>
+          </select></div>
         </div>
       </div>
-      <div>
-        <div style="float: left;width: 10%;text-align: center;">Autor</div>
-        <input style="width: 80%;" v-model="ticket_v.autor" :disabled="!ticket_v.editando">
+      <div class="cabecera_ticket">
+        <div>Autor</div>
+        <div><input style="width: 100%;" v-model="ticket_v.autor" :disabled="!ticket_v.editando"></div>
       </div>
-      <div v-if="tidx==0">
-        <div style="float: left;width: 10%;text-align: center;">Tags</div>
+      <div v-if="tidx==0" class="cabecera_ticket">
+        <div>Tags</div>
         <div class="taglist">
-          <div style="float: left;width: 5em;" v-for="(tag,tagidx) in ticket_v.tags" :key="tagidx" >
+          <div style="float: left;width: 7em;" v-for="(tag,tagidx) in ticket_v.tags" :key="tagidx" >
             <div class="tag" 
               :contenteditable="ticket_v.editando? true : null"
-              @focusout="(event) => ticket_v.tags[tagidx] = event.target.textContent">{{ tag }}</div>
-            <button v-if="ticket_v.editando" class="cruz_borrar" @click="ticket_v.tags.splice(tagidx,1)">x</button>
-          </div>
-          <div style="width: 5%;float: left;" v-if="ticket_v.editando">
-            <button style="width: 100%;" @click="ticket_v.tags.push('')">+</button>
+              @focusout="cambio_tag($event,ticket_v,tagidx)">{{ tag }}</div>
+            <button v-if="ticket_v.editando && tagidx < (ticket_v.tags.length-1)" class="cruz_borrar" @click="ticket_v.tags.splice(tagidx,1)">×</button>
           </div>
         </div>
       </div>
@@ -363,7 +369,7 @@ onMounted(function(){
         <div>
           <div class="archivo" v-for="(a,aidx) in ticket_v.archivos">
             <a :href="a.url" target="_blank" :title="a.title" :download="a.nombre">{{ a.nombre }}</a>
-            <button v-if="ticket_v.editando" class="cruz_borrar" @click="ticket_v.archivos.splice(aidx,1)">x</button>
+            <button v-if="ticket_v.editando" class="cruz_borrar" @click="ticket_v.archivos.splice(aidx,1)">×</button>
           </div>
         </div>
       </div>
