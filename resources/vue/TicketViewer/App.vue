@@ -343,7 +343,7 @@ onMounted(function(){
         <div>Tags</div>
         <div class="taglist">
           <div style="float: left;width: 7em;" v-for="(tag,tagidx) in ticket_v.tags" :key="tagidx" >
-            <div class="tag" 
+            <div class="tag contenteditable" 
               :contenteditable="ticket_v.editando? true : null"
               @focusout="cambio_tag($event,ticket_v,tagidx)">{{ tag }}</div>
             <button v-if="ticket_v.editando && tagidx < (ticket_v.tags.length-1)" class="cruz_borrar" @click="ticket_v.tags.splice(tagidx,1)">×</button>
@@ -360,7 +360,7 @@ onMounted(function(){
           <input class="colorpicker" type="color" v-model="ticket_v.color">
         </button>
       </div>
-      <div class="cuerpo"
+      <div class="cuerpo contenteditable"
         :contenteditable="ticket_v.editando? true : null"
         v-html="to_html(ticket_v.texto)">
       </div>

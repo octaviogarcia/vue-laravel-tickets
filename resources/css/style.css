@@ -1,0 +1,38 @@
+body {
+  background-color: rgb(30,20,60);
+  opacity: 0.8;
+  background-image: linear-gradient(-45deg, rgb(30,20,60), rgb(30,20,60) 50%, rgb(35,25,65) 50%, rgb(35,25,65));
+  background-size: 45px 45px;
+  font-family: "Open Sans",-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+
+input, select, .contenteditable[contenteditable]  {
+  background: rgb(56,52,60);
+  color: white;
+  margin: 2px;
+  padding: 2px;
+  font-size: 1em;
+  border: 0px;
+}
+
+input[disabled], select[disabled], .contenteditable:not([contenteditable])  {
+  background: rgb(76,72,80);
+}
+
+div {
+  text-shadow: 1px 1px 1px rgb(50,50,50);
+  color: white;
+  margin: 2px;
+  padding: 2px;
+  font-size: 1em;
+}
+
+button {
+  background: rgb(56,52,60);
+  color: white;
+  border: 2px solid rgb(166, 166, 166);
+}
+
+button:hover {
+  background: rgb(56,52,150) !important;
+}
