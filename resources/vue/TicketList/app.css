@@ -11,16 +11,15 @@
   padding: 0px;
   margin: 0px;
 }
-#menu{
+#contenido {
   width: 100%;
-  height: 10%;
+  height: 88%;
+  overflow-y: scroll;
   display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
 }
-#menu > * {
-  flex: 1;
-}
+
 #buscador {
   width: 95%;
   margin: 5px 0px 5px 0px;
@@ -41,14 +40,6 @@
 #buscador > * select {
   width: 100%;
 }
-#contenido {
-  width: 100%;
-  height: 88%;
-  overflow-y: scroll;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
 #div_tickets {
   width: 100%;
   overflow-y: scroll;
@@ -61,7 +52,4 @@
 #tickets {
   width: 90%;
   border-collapse: collapse;
-}
-#ver_usuario {
-  background: rgb(70,120,120);
 }

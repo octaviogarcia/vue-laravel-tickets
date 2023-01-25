@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted,nextTick } from 'vue';
-
+import Menu from '../Menu/App.vue'
 
 const estados = ['ABIERTO','SOLUCIONADO','CERRADO'];
 
@@ -24,13 +24,7 @@ const tickets = Array.from({length: 100}, () => Math.floor(Math.random() * 100))
 
 <template>
   <div id="main">
-    <div id="menu">
-      <button id="ver_usuario">Usuario: Pepe Sanchez</button>
-      <button id="ver_usuarios">USUARIOS</button>
-      <button id="ver_tickers">TICKETS</button>
-      <button id="ver_informes">INFORMES</button>
-      <button id="logout">LOGOUT</button>
-    </div>
+    <Menu/>
     <div id="contenido">
       <div id="buscador" class="div_fondo">
         <div>
