@@ -1,7 +1,7 @@
 <script setup>
 import './app.css';
 import { ref, computed, onMounted,nextTick } from 'vue';
-import Menu from '../Menu/App.vue'
+import WithMenu from '../WithMenu/App.vue'
 
 const estados = ['ABIERTO','SOLUCIONADO','CERRADO'];
 
@@ -260,89 +260,86 @@ onMounted(function(){
 </script>
 
 <template>
-  <div id="main">
-    <Menu/>
-    <div id="contenido">
-      <div id="tickets">
-        <div :id="`ticket${tidx}`" class="ticket div_fondo" v-for="(ticket_v,tidx) in tickets_v" :key="tidx">
-          <div v-if="tidx==0">
-            <div class="cabecera_ticket">
-              <div>Número</div>
-              <div>{{ ticket_v.numero ?? '-NUEVO-' }}</div>
-            </div>
-            <div class="cabecera_ticket">
-              <div>Creado</div>
-              <div>{{ ticket_v.created_at ?? dateCreacion }}</div>
-            </div>
-            <div class="cabecera_ticket">
-              <div>Modificado</div>
-              <div>{{ ticket_v.modified_at ?? '--'}}</div>
-            </div>
-            <div class="cabecera_ticket">
-              <div>Titulo</div>
-              <div><input style="width: 100%;" v-model="ticket_v.titulo" :disabled="!ticket_v.editando"></div>
-            </div>
-            <div class="cabecera_ticket">
-              <div>Estado</div>
-              <div><select style="width: 100%;" v-model="ticket_v.estado" :disabled="!ticket_v.editando">
-                <option></option>
-                <option>ABIERTO</option>
-                <option>SOLUCIONADO</option>
-                <option>CERRADO</option>
-              </select></div>
-            </div>
+  <WithMenu>
+    <div id="tickets">
+      <div :id="`ticket${tidx}`" class="ticket div_fondo" v-for="(ticket_v,tidx) in tickets_v" :key="tidx">
+        <div v-if="tidx==0">
+          <div class="cabecera_ticket">
+            <div>Número</div>
+            <div>{{ ticket_v.numero ?? '-NUEVO-' }}</div>
           </div>
           <div class="cabecera_ticket">
-            <div>Autor</div>
-            <div><input style="width: 100%;" v-model="ticket_v.autor" :disabled="!ticket_v.editando"></div>
+            <div>Creado</div>
+            <div>{{ ticket_v.created_at ?? dateCreacion }}</div>
           </div>
-          <div v-if="tidx==0" class="cabecera_ticket">
-            <div>Tags</div>
-            <div class="taglist">
-              <div style="float: left;width: 7em;" v-for="(tag,tagidx) in ticket_v.tags" :key="tagidx" >
-                <div class="tag contenteditable" 
-                  :contenteditable="ticket_v.editando? true : null"
-                  @focusout="cambio_tag($event,ticket_v,tagidx)">{{ tag }}</div>
-                <button v-if="ticket_v.editando && tagidx < (ticket_v.tags.length-1)" class="cruz_borrar" @click="ticket_v.tags.splice(tagidx,1)">×</button>
-              </div>
+          <div class="cabecera_ticket">
+            <div>Modificado</div>
+            <div>{{ ticket_v.modified_at ?? '--'}}</div>
+          </div>
+          <div class="cabecera_ticket">
+            <div>Titulo</div>
+            <div><input style="width: 100%;" v-model="ticket_v.titulo" :disabled="!ticket_v.editando"></div>
+          </div>
+          <div class="cabecera_ticket">
+            <div>Estado</div>
+            <div><select style="width: 100%;" v-model="ticket_v.estado" :disabled="!ticket_v.editando">
+              <option></option>
+              <option>ABIERTO</option>
+              <option>SOLUCIONADO</option>
+              <option>CERRADO</option>
+            </select></div>
+          </div>
+        </div>
+        <div class="cabecera_ticket">
+          <div>Autor</div>
+          <div><input style="width: 100%;" v-model="ticket_v.autor" :disabled="!ticket_v.editando"></div>
+        </div>
+        <div v-if="tidx==0" class="cabecera_ticket">
+          <div>Tags</div>
+          <div class="taglist">
+            <div style="float: left;width: 7em;" v-for="(tag,tagidx) in ticket_v.tags" :key="tagidx" >
+              <div class="tag contenteditable" 
+                :contenteditable="ticket_v.editando? true : null"
+                @focusout="cambio_tag($event,ticket_v,tagidx)">{{ tag }}</div>
+              <button v-if="ticket_v.editando && tagidx < (ticket_v.tags.length-1)" class="cruz_borrar" @click="ticket_v.tags.splice(tagidx,1)">×</button>
             </div>
           </div>
-          <hr style="width: 97%;">
-          <div class="enriquecer">
-            <button @click="aplicarEstilo($event,tidx,'negrita')" v-if="ticket_v.editando"><b>N</b></button>
-            <button @click="aplicarEstilo($event,tidx,'cursiva')" v-if="ticket_v.editando"><i>Curs</i></button>
-            <button @click="aplicarEstilo($event,tidx,'subrayar')" v-if="ticket_v.editando"><u>Sub</u></button>
-            <button @click="aplicarEstilo($event,tidx,'color')" v-if="ticket_v.editando">
-              <span>Color</span>
-              <input class="colorpicker" type="color" v-model="ticket_v.color">
-            </button>
-          </div>
-          <div class="cuerpo contenteditable"
-            :contenteditable="ticket_v.editando? true : null"
-            v-html="to_html(ticket_v.texto)">
-          </div>
-          <div v-if="ticket_v.archivos">
-            <div>Archivos</div>
-            <div>
-              <div class="archivo" v-for="(a,aidx) in ticket_v.archivos">
-                <a :href="a.url" target="_blank" :title="a.title" :download="a.nombre">{{ a.nombre }}</a>
-                <button v-if="ticket_v.editando" class="cruz_borrar" @click="ticket_v.archivos.splice(aidx,1)">×</button>
-              </div>
+        </div>
+        <hr style="width: 97%;">
+        <div class="enriquecer">
+          <button @click="aplicarEstilo($event,tidx,'negrita')" v-if="ticket_v.editando"><b>N</b></button>
+          <button @click="aplicarEstilo($event,tidx,'cursiva')" v-if="ticket_v.editando"><i>Curs</i></button>
+          <button @click="aplicarEstilo($event,tidx,'subrayar')" v-if="ticket_v.editando"><u>Sub</u></button>
+          <button @click="aplicarEstilo($event,tidx,'color')" v-if="ticket_v.editando">
+            <span>Color</span>
+            <input class="colorpicker" type="color" v-model="ticket_v.color">
+          </button>
+        </div>
+        <div class="cuerpo contenteditable"
+          :contenteditable="ticket_v.editando? true : null"
+          v-html="to_html(ticket_v.texto)">
+        </div>
+        <div v-if="ticket_v.archivos">
+          <div>Archivos</div>
+          <div>
+            <div class="archivo" v-for="(a,aidx) in ticket_v.archivos">
+              <a :href="a.url" target="_blank" :title="a.title" :download="a.nombre">{{ a.nombre }}</a>
+              <button v-if="ticket_v.editando" class="cruz_borrar" @click="ticket_v.archivos.splice(aidx,1)">×</button>
             </div>
           </div>
-          <div class="acciones">
-            <button @click="guardar($event,tidx)">{{ ticket_v.editando? 'GUARDAR' : 'EDITAR'}}</button>
-            <button v-if="ticket_v.editando" @click="cancelar($event,tidx)">CANCELAR</button>
-            <button v-if="ticket_v.editando" @click="adjuntar($event,ticket_v)">ADJUNTAR</button>
-            <input type="file" multiple  
-              class="file_select" 
-              style="position: absolute; top: -1000px; left: -1000px;visiblity: hidden;"
-              @change="seleccionArchivos($event,ticket_v)">
-            <button v-if="ticket_v.editando">ELIMINAR</button>
-            <button v-if="!ticket_v.editando">HISTORIAL</button>
-          </div>
+        </div>
+        <div class="acciones">
+          <button @click="guardar($event,tidx)">{{ ticket_v.editando? 'GUARDAR' : 'EDITAR'}}</button>
+          <button v-if="ticket_v.editando" @click="cancelar($event,tidx)">CANCELAR</button>
+          <button v-if="ticket_v.editando" @click="adjuntar($event,ticket_v)">ADJUNTAR</button>
+          <input type="file" multiple  
+            class="file_select" 
+            style="position: absolute; top: -1000px; left: -1000px;visiblity: hidden;"
+            @change="seleccionArchivos($event,ticket_v)">
+          <button v-if="ticket_v.editando">ELIMINAR</button>
+          <button v-if="!ticket_v.editando">HISTORIAL</button>
         </div>
       </div>
     </div>
-  </div>
+  </WithMenu>
 </template>

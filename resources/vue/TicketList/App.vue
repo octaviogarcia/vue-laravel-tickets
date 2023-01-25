@@ -1,7 +1,7 @@
 <script setup>
 import './app.css';
 import { ref, computed, onMounted,nextTick } from 'vue';
-import Menu from '../Menu/App.vue'
+import WithMenu from '../WithMenu/App.vue';
 
 const estados = ['ABIERTO','SOLUCIONADO','CERRADO'];
 
@@ -24,78 +24,75 @@ const tickets = Array.from({length: 100}, () => Math.floor(Math.random() * 100))
 </script>
 
 <template>
-  <div id="main">
-    <Menu/>
-    <div id="contenido">
-      <div id="buscador" class="div_fondo">
+  <WithMenu>
+    <div id="buscador" class="div_fondo">
+      <div>
+        <div>Número</div>
+        <div><input></div>
+      </div>
+      <div>
+        <div>Titulo</div>
+        <div><input></div>
+      </div>
+      <div>
+        <div>Autor</div>
+        <div><input></div>
+      </div>
+      <div>
+        <div>Estado</div>
         <div>
-          <div>Número</div>
-          <div><input></div>
-        </div>
-        <div>
-          <div>Titulo</div>
-          <div><input></div>
-        </div>
-        <div>
-          <div>Autor</div>
-          <div><input></div>
-        </div>
-        <div>
-          <div>Estado</div>
-          <div>
-            <select>
-              <option v-for="(e,eidx) in estados" :key="eidx">
-                {{ e }}
-              </option>
-            </select>
-          </div>
-        </div>
-        <div>
-          <div>Tags</div>
-          <div><input></div>
-        </div>
-        <div>
-          <div>Creado</div>
-          <div><input type="date"><input type="date"></div>
-        </div>
-        <div>
-          <div>Modificado</div>
-          <div><input type="date"><input type="date"></div>
+          <select>
+            <option v-for="(e,eidx) in estados" :key="eidx">
+              {{ e }}
+            </option>
+          </select>
         </div>
       </div>
-      <div id="div_tickets">
-        <table id="tickets">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Titulo</th>
-              <th>Autor</th>
-              <th>Estado</th>
-              <th>Tags</th>
-              <th>Creado</th>
-              <th>Modificado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(ticket,tidx) in tickets" :key="tidx">
-              <td>{{ ticket.numero ?? '-NUEVO-' }}</td>
-              <td>{{ ticket.titulo }}</td>
-              <td>{{ ticket.autor }}</td>
-              <td>{{ ticket.estado }}</td>
-              <td>{{ (ticket.tags ?? []).join(' ') }}</td>
-              <td>{{ ticket.created_at }}</td>
-              <td>{{ ticket.modified_at }}</td>
-              <td>
-                <div class="acciones">
-                  <button>VER</button>
-                  <button>ELIMINAR</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div>
+        <div>Tags</div>
+        <div><input></div>
+      </div>
+      <div>
+        <div>Creado</div>
+        <div><input type="date"><input type="date"></div>
+      </div>
+      <div>
+        <div>Modificado</div>
+        <div><input type="date"><input type="date"></div>
       </div>
     </div>
-  </div>
+    <div id="div_tickets">
+      <table id="tickets">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Titulo</th>
+            <th>Autor</th>
+            <th>Estado</th>
+            <th>Tags</th>
+            <th>Creado</th>
+            <th>Modificado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(ticket,tidx) in tickets" :key="tidx">
+            <td>{{ ticket.numero ?? '-NUEVO-' }}</td>
+            <td>{{ ticket.titulo }}</td>
+            <td>{{ ticket.autor }}</td>
+            <td>{{ ticket.estado }}</td>
+            <td>{{ (ticket.tags ?? []).join(' ') }}</td>
+            <td>{{ ticket.created_at }}</td>
+            <td>{{ ticket.modified_at }}</td>
+            <td>
+              <div class="acciones">
+                <button>VER</button>
+                <button>ELIMINAR</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </WithMenu>
 </template>
