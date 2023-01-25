@@ -1,4 +1,5 @@
 <script setup>
+import './app.css';
 import { ref, computed, onMounted,nextTick } from 'vue';
 import Menu from '../Menu/App.vue'
 

@@ -6,7 +6,6 @@
 	<title>CAS - Lotería de Santa Fe - Tickets</title>
   {!! $blade_vars_JS !!}
   @vite('resources/css/style.css')
-	@vite('resources/vue/TicketList/app.css')
 </head>
 <body>
 	<div id="app"></div>

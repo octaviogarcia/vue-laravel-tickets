@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue';
+import './app2.css';
 import UintModifier from './UintModifier.vue'
 
 const count = ref(0);//Reactivo
