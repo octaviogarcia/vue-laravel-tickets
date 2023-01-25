@@ -1,82 +1,34 @@
 <script setup>
 import { ref, computed, onMounted,nextTick } from 'vue';
 
-const tickets = ref([
+const estados = ['ABIERTO','SOLUCIONADO','CERRADO'];
+
+const tickets = ref(Array.from({length: 100}, () => Math.floor(Math.random() * 100)).map(function(v,idx){
+  function rand(maxnum){
+    const next_pow10 = 10**Math.ceil(Math.log10(maxnum));
+    return Math.floor(Math.random()*next_pow10)%maxnum;
+  }
+  const inicial = idx == 0?
   {
-    titulo: 'Tiitulo',
-    estado: 'SOLUCIONADO', 
-    tags : ['tag1','tag2','tag3'],
-    autor: 'Autooooor',
-    texto: 'Textoooooo',
-  },
-  {
-    autor: 'Autooooor1',
-    texto: [
+    titulo: 'Titulo'+idx,
+    estado: estados[rand(estados.length)],
+    tags: Array.from({length: rand(4)},(v) => 'tag'+rand(4)),
+    created_at: new Date(blade_vars.server_time*1000).toLocaleString(),
+    modified_at: new Date(blade_vars.server_time*1000).toLocaleString(),
+  } : {};
+  return {
+    numero: rand(10000),
+    autor: 'Autor'+rand(23),
+    texto: 'Textooooooooo'+rand(100),
+    ...inicial,
+    archivos: Array.from({length: rand(4)},(v) => (
       {
-        tipo: 'parrafo',
-        texto: {
-          tipo: 'negrita',
-          texto: 'negrita',
-        }
-      },
-      {
-        tipo: 'cursiva',
-        texto: 'cursiva',
-      },
-      {
-        tipo: 'subrayar',
-        texto: 'subrayar',
-      },
-      {
-        tipo: 'color',
-        texto: 'color',
-      },
-      {
-        tipo: 'color',
-        color: 'red',
-        texto: 'color',
-      },
-    ]
-  },
-  {
-    autor: 'Autooooor2',
-    texto: [{
-      tipo: 'negrita',
-      texto: 'negrita',
-    },
-    {
-      tipo: 'negrita',
-      texto: 'negrita',
-    },
-    {
-      tipo: 'subrayar',
-      texto: 'subrayar',
-    },
-    {
-      tipo: 'cursiva',
-      texto: 'cursiva',
-    },
-    {
-      tipo: 'color',
-      color: 'red',
-      texto: 'color'
-    }]
-  },
-  {
-    autor: 'Autooooor3',
-    texto: 'Textoooooo3',
-    archivos: [
-      {
-        nombre: 'foto1.jpg',
-        url: 'archivos/foto1.jpg',
-      },
-      {
-        nombre: 'documento.png',
-        url: 'archivos/foto1.png',
+        nombre:'archivo'+rand(4)+'.jpg',
+        url: 'archivos/ruta'+rand(4)+'.jpg',
       }
-    ]
-  },
-]);
+    ))
+  };
+}));
 
 const tickets_v = ref(JSON.parse(JSON.stringify(tickets.value)));
 
@@ -307,7 +259,7 @@ onMounted(function(){
 
 <template>
   <div id="listaTickets">
-    <div :id="`ticket${tidx}`" class="ticket" v-for="(ticket_v,tidx) in tickets_v" :key="tidx">
+    <div :id="`ticket${tidx}`" class="ticket div_fondo" v-for="(ticket_v,tidx) in tickets_v" :key="tidx">
       <div v-if="tidx==0">
         <div class="cabecera_ticket">
           <div>Número</div>

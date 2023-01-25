@@ -1,7 +1,6 @@
 body {
-  background-color: rgb(44, 51, 51);
-  background-image: linear-gradient(-45deg, rgb(44, 51, 51), rgb(44, 51, 51) 50%, rgb(36, 56, 64) 50%, rgb(36, 56, 64));
-  background-size: 351px 351px;
+  background-color: #2c3333;
+  background: linear-gradient(135deg, #24384055 25%, transparent 25%) -40px 0/ 80px 80px, linear-gradient(225deg, #243840 25%, transparent 25%) -40px 0/ 80px 80px, linear-gradient(315deg, #24384055 25%, transparent 25%) 0px 0/ 80px 80px, linear-gradient(45deg, #243840 25%, #2c3333 25%) 0px 0/ 80px 80px;
   font-family: "Open Sans",-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
 }
 
@@ -18,7 +17,7 @@ input, select, .contenteditable[contenteditable]  {
 }
 
 input[disabled], select[disabled], .contenteditable:not([contenteditable])  {
-  background: rgb(76,72,80);
+  background: rgb(67, 78, 81);
 }
 
 div {

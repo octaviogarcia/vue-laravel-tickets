@@ -10,8 +10,6 @@
 #listaTickets .ticket {
   width: 40%;
   height: 350px;
-  background: rgba(255,255,255,0.4);
-  border: 1px solid grey;
   margin: 4px;
   margin-left: 35px;
   padding: 4px;
