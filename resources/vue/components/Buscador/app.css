@@ -1,0 +1,19 @@
+#buscador {
+  width: 95%;
+  margin: 5px 0px 5px 0px;
+  display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+}
+#buscador > * {
+  width: 18%;
+}
+#buscador * {
+  margin: 1;
+}
+#buscador > *  input {
+  width: 100%;
+}
+#buscador > * select {
+  width: 100%;
+}

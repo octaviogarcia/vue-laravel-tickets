@@ -1,7 +1,7 @@
 <script setup>
 import './app.css';
 import { ref, computed, onMounted,nextTick } from 'vue';
-import WithMenu from '../WithMenu/App.vue'
+import WithMenu from '../components/WithMenu/App.vue'
 
 const estados = ['ABIERTO','SOLUCIONADO','CERRADO'];
 
@@ -307,10 +307,10 @@ onMounted(function(){
         </div>
         <hr style="width: 97%;">
         <div class="enriquecer">
-          <button @click="aplicarEstilo($event,tidx,'negrita')" v-if="ticket_v.editando"><b>N</b></button>
-          <button @click="aplicarEstilo($event,tidx,'cursiva')" v-if="ticket_v.editando"><i>Curs</i></button>
-          <button @click="aplicarEstilo($event,tidx,'subrayar')" v-if="ticket_v.editando"><u>Sub</u></button>
-          <button @click="aplicarEstilo($event,tidx,'color')" v-if="ticket_v.editando">
+          <button @click="aplicarEstilo($event,tidx,'negrita')" v-show="ticket_v.editando"><b>N</b></button>
+          <button @click="aplicarEstilo($event,tidx,'cursiva')" v-show="ticket_v.editando"><i>Curs</i></button>
+          <button @click="aplicarEstilo($event,tidx,'subrayar')" v-show="ticket_v.editando"><u>Sub</u></button>
+          <button @click="aplicarEstilo($event,tidx,'color')" v-show="ticket_v.editando">
             <span>Color</span>
             <input class="colorpicker" type="color" v-model="ticket_v.color">
           </button>
@@ -319,7 +319,7 @@ onMounted(function(){
           :contenteditable="ticket_v.editando? true : null"
           v-html="to_html(ticket_v.texto)">
         </div>
-        <div v-if="ticket_v.archivos">
+        <div v-show="(ticket_v.archivos ?? []).length">
           <div>Archivos</div>
           <div>
             <div class="archivo" v-for="(a,aidx) in ticket_v.archivos">
@@ -330,14 +330,14 @@ onMounted(function(){
         </div>
         <div class="acciones">
           <button @click="guardar($event,tidx)">{{ ticket_v.editando? 'GUARDAR' : 'EDITAR'}}</button>
-          <button v-if="ticket_v.editando" @click="cancelar($event,tidx)">CANCELAR</button>
-          <button v-if="ticket_v.editando" @click="adjuntar($event,ticket_v)">ADJUNTAR</button>
+          <button v-show="ticket_v.editando" @click="cancelar($event,tidx)">CANCELAR</button>
+          <button v-show="ticket_v.editando" @click="adjuntar($event,ticket_v)">ADJUNTAR</button>
           <input type="file" multiple  
             class="file_select" 
             style="position: absolute; top: -1000px; left: -1000px;visiblity: hidden;"
             @change="seleccionArchivos($event,ticket_v)">
-          <button v-if="ticket_v.editando">ELIMINAR</button>
-          <button v-if="!ticket_v.editando">HISTORIAL</button>
+          <button v-show="ticket_v.editando">ELIMINAR</button>
+          <button v-show="!ticket_v.editando">HISTORIAL</button>
         </div>
       </div>
     </div>

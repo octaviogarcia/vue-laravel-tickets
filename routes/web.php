@@ -55,7 +55,7 @@ Route::get('/2', function () {
   ]);
 });
 
-Route::get('/ticket_viewer',function(){
+Route::get('/ticket_viewer/{number?}',function(){
   return view_with_variables('ticket_viewer',['server_time' => (new DateTimeImmutable())->getTimestamp()]);
 });
 Route::get('/ticket_list',function(){
