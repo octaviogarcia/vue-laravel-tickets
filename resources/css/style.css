@@ -62,3 +62,17 @@ td:not(:last-of-type),th:not(:last-of-type){
   border: 2px solid rgb(166, 166, 166);
 }
 
+.modal {
+  background: rgba(0,0,0,0.3);/* Move to style.css */
+}
+.modal .modal-window {
+  background: #243840;/* Move to style.css */
+}
+.modal .modal-header {
+  background: #243840;/* Move to style.css */
+  border-bottom-color: rgb(231, 246, 242,0.1);/* Move to style.css */
+}
+.modal .modal-body {
+  background: #2c3333;
+}
+

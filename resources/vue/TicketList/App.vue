@@ -3,6 +3,7 @@ import './app.css';
 import { ref, computed, watch, onMounted,nextTick } from 'vue';
 import WithMenu from '../components/WithMenu/App.vue';
 import Buscador from '../components/Buscador/App.vue';
+import Modal from '../components/Modal/App.vue';
 
 const estados = [
   {name: 'ABIERTO', val: 'ABIERTO'},
@@ -55,6 +56,13 @@ function buscador_cambio(event,test){
   console.log(test);//@TODO: API request
 }
 
+const modal_ver_ticket_refs = ref({
+  show_modal: false,
+});
+function ver_ticket(event,ticket){
+  modal_ver_ticket_refs.value.show_modal = true;
+}
+
 </script>
 
 <template>
@@ -85,7 +93,8 @@ function buscador_cambio(event,test){
             <td>{{ ticket.modified_at }}</td>
             <td>
               <div class="acciones">
-                <a :href="'/ticket_viewer/'+ticket.numero" target="_blank"><button>VER</button></a>
+                <button @click="ver_ticket($event,ticket)">VER</button>
+                <!--<a :href="'/ticket_viewer/'+ticket.numero" target="_blank"><button>VER</button></a>-->
                 <button @click="eliminar($event,ticket,tidx)">ELIMINAR</button>
               </div>
             </td>
@@ -93,5 +102,8 @@ function buscador_cambio(event,test){
         </tbody>
       </table>
     </div>
+    <Modal ref="modal_ver_ticket_refs" :show_modal="modal_ver_ticket_refs.show_modal" id="modalVerTicket" title="Titulo modal" >
+      CUERPO!
+    </Modal>
   </WithMenu>
 </template>
