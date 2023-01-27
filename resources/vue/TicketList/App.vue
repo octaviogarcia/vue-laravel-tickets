@@ -4,6 +4,7 @@ import { ref, computed, watch, onMounted,nextTick } from 'vue';
 import WithMenu from '../components/WithMenu/App.vue';
 import Buscador from '../components/Buscador/App.vue';
 import Modal from '../components/Modal/App.vue';
+import TicketViewer from '../components/TicketViewer/App.vue';
 
 const estados = [
   {name: 'ABIERTO', val: 'ABIERTO'},
@@ -56,10 +57,13 @@ function buscador_cambio(event,test){
   console.log(test);//@TODO: API request
 }
 
+const viewing_ticket = ref(null);
 const modal_ver_ticket_refs = ref({
   show_modal: false,
 });
+
 function ver_ticket(event,ticket){
+  viewing_ticket.value = ticket.numero;
   modal_ver_ticket_refs.value.show_modal = true;
 }
 
@@ -102,8 +106,10 @@ function ver_ticket(event,ticket){
         </tbody>
       </table>
     </div>
-    <Modal ref="modal_ver_ticket_refs" :show_modal="modal_ver_ticket_refs.show_modal" id="modalVerTicket" title="Titulo modal" >
-      CUERPO!
+    <Modal ref="modal_ver_ticket_refs" :show_modal="modal_ver_ticket_refs.show_modal" id="modalVerTicket" :title="`Ticket #${viewing_ticket}`" >
+      <div style="overflow: scroll;height: 100%;width: 100%;padding: 0;margin: 0;">
+        <TicketViewer></TicketViewer>
+      </div>
     </Modal>
   </WithMenu>
 </template>

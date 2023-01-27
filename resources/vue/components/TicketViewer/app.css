@@ -1,0 +1,103 @@
+.ticket_viewer {
+	display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	justify-content: flex-start;
+	align-content: stretch;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.ticket_viewer .ticket {
+  width: 45%;
+  height: 350px;
+  margin: 4px;
+  margin-left: 35px;
+  padding: 4px;
+  display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	justify-content: flex-start;
+	align-content: stretch;
+}
+
+.ticket_viewer .ticket:nth-child(1){
+  margin-left: 4px;
+  height: 700px;
+}
+
+.ticket_viewer .ticket .cuerpo {
+  width: 99%;
+  margin: 0px;
+  padding: 0px;
+  height: 300px;
+  overflow-y: scroll;
+}
+
+.ticket_viewer .ticket:nth-child(1) .cuerpo {
+  height: 500px;
+}
+
+.ticket_viewer .ticket .taglist .tag {
+  width: 5em;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  border: 1px solid grey;
+  border-radius: 10px;
+  text-align: center;
+  height: 2em;
+  overflow-y: scroll;
+  vertical-align: middle;
+  display: inline-block;
+}
+
+.ticket_viewer .ticket .taglist > *:last-of-type [contenteditable]{
+  background: rgb(56,70,60);
+}
+
+.ticket_viewer .ticket .acciones > * {
+  float: left;
+  width: 15%;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+.ticket_viewer .ticket .colorpicker {
+  padding: 0px;
+  width: 1em;
+  height: 0.85em;
+}
+
+.ticket_viewer .archivo {
+  max-width: 9em;
+  max-height: 5em;
+  float: left;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  overflow-y: scroll;
+}
+.ticket_viewer .archivo > a{
+  max-width: 8em;
+}
+
+.ticket_viewer .cabecera_ticket {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.ticket_viewer .cabecera_ticket > * {
+  width: 80%;
+  text-align: left;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  overflow-y: scroll;
+  margin: 0;
+  padding: 0;
+  padding-right: 1em;
+}
+.ticket_viewer .cabecera_ticket > *:nth-child(1) {
+  width: 15%;
+  text-align: right;
+}
