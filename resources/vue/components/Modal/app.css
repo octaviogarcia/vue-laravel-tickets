@@ -16,9 +16,21 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  transition: background 1s linear;
 }
 .modal[minimizado] {
+  transition: background 1s linear;
   background: unset;
+}
+.modal-enter-active {
+  transition: opacity 0.1s linear;
+}
+.modal-leave-active {
+  transition: opacity 0.1s linear;
+}
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
 }
 
 .modal > div {
@@ -39,11 +51,21 @@
   padding: 0;
   display: flex;
   flex-direction: column;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+  animation: maximize 0.8s ease-out;
+}
+@keyframes maximize {
+  from   { clip-path: polygon(0% 0%, 100% 0%, 100% 10%, 0% 10%); }
+  to { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); }
 }
 
 .modal[minimizado] .modal-window {
-  height: 9.5%;
-  margin-bottom: 39.125%;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 10%, 0% 10%);
+  animation: minimize 0.8s ease-in;
+}
+@keyframes minimize {
+  from { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); }
+  to   { clip-path: polygon(0% 0%, 100% 0%, 100% 10%, 0% 10%); }
 }
 
 .modal .modal-header {
@@ -56,19 +78,22 @@
   flex-direction: column;
   justify-content: center;
 }
-.modal[minimizado] .modal-header {
-  height: 100%;
-  border-bottom-width: unset;
-  border-bottom-style: unset;
-}
 
 .modal .modal-body {
   height: 90%;
   padding: 0;
   margin: 0;
 }
-.modal[minimizado] .modal-body {
-  display: none;
+
+.modal-body-leave-active {
+  transition: opacity 1.2s ease;
+}
+.modal-body-enter-active{
+  transition: opacity 1.2s ease;
+}
+.modal-body-enter-from,
+.modal-body-leave-to {
+  opacity: 0;
 }
 
 .modal .modal-header > div {
