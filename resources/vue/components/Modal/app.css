@@ -17,20 +17,12 @@
   align-items: center;
   justify-content: center;
   transition: background 1s linear;
+  animation: show 0.1s linear;
+  opacity: 1;
 }
 .modal[minimizado] {
   transition: background 1s linear;
   background: unset;
-}
-.modal-enter-active {
-  transition: opacity 0.1s linear;
-}
-.modal-leave-active {
-  transition: opacity 0.1s linear;
-}
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
 }
 
 .modal > div {
@@ -83,17 +75,22 @@
   height: 90%;
   padding: 0;
   margin: 0;
+  transition: show 1.2s ease;
+  opacity: 1;
 }
 
-.modal-body-leave-active {
-  transition: opacity 1.2s ease;
-}
-.modal-body-enter-active{
-  transition: opacity 1.2s ease;
-}
-.modal-body-enter-from,
-.modal-body-leave-to {
+.modal[minimizado] .modal-body {
+  animation: fade 1.2s ease;
   opacity: 0;
+}
+
+@keyframes show {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes fade {
+  from { opacity: 1; }
+  to   { opacity: 0; }
 }
 
 .modal .modal-header > div {

@@ -1,5 +1,5 @@
 <script setup>
-import { ref,computed, Transition, watch } from 'vue';
+import { ref,computed, watch } from 'vue';
 import './app.css'
 
 const props = defineProps(['id','title','show_modal','minimize_modal']);
@@ -20,28 +20,24 @@ defineExpose({
 </script>
 
 <template>
-  <Transition name="modal">
-    <div :id="props.id" class="modal" :minimizado="minimize_modal? true : null" v-show="show_modal">
-      <div>
-        <div class="modal-window">
-          <div class="modal-header">
-            <div>
-              <div class="modal-header-title">{{props.title ?? 'XXXXXXXXXXXXXXXXXXXXX'}}</div>
-              <div class="modal-header-buttons">
-                <button @click="minimize_modal = !minimize_modal">_</button>
-                <button @click="show_modal = false">☓</button>
-              </div>
+  <div :id="props.id" class="modal" :minimizado="minimize_modal? true : null" v-show="show_modal">
+    <div>
+      <div class="modal-window">
+        <div class="modal-header">
+          <div>
+            <div class="modal-header-title">{{props.title ?? 'XXXXXXXXXXXXXXXXXXXXX'}}</div>
+            <div class="modal-header-buttons">
+              <button @click="minimize_modal = !minimize_modal">_</button>
+              <button @click="show_modal = false">☓</button>
             </div>
           </div>
-          <Transition name="modal-body">
-            <div class="modal-body" v-show="!minimize_modal">
-              <slot>
-                <div>XXXXXXXXXXXXXXXXXXXXX</div>
-              </slot>
-            </div>
-          </Transition>
+        </div>
+        <div class="modal-body">
+          <slot>
+            <div>XXXXXXXXXXXXXXXXXXXXX</div>
+          </slot>
         </div>
       </div>
     </div>
-  </Transition>
+  </div>
 </template>
