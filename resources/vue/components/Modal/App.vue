@@ -1,10 +1,17 @@
 <script setup>
-import { ref,computed, Transition } from 'vue';
+import { ref,computed, Transition, watch } from 'vue';
 import './app.css'
 
 const props = defineProps(['id','title','show_modal','minimize_modal']);
 const show_modal = ref(props.show_modal ?? false);
 const minimize_modal = ref(props.minimize_modal ?? false);
+
+watch([show_modal,minimize_modal],function([n_show_modal,n_minimize_modal],[o_show_modal,o_minimize_modal]){
+  //We don't allow you to open the modal with the modal minimized
+  if(n_show_modal && !o_show_modal && n_minimize_modal){
+    minimize_modal.value = false;
+  }
+});
 
 defineExpose({
   show_modal,
