@@ -29,27 +29,30 @@
 .buscador > .props > * {
   width: 18%;
 }
-
-.props-enter-from {
-  clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%);
+.buscador:not([first_render]) {
+  animation: maximizar 0.1s linear;
 }
-.props-enter-active {
-  animation: maximizar 0.1s ease-out;
-}
-
 @keyframes maximizar {
-  from { clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%); }
+  from { clip-path: polygon(0% 0%, 100% 0%, 100% 22%, 0% 22%); }
   to   { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); }
 }
-
-.props-leave-from {
-  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
-}
-.props-leave-active {
-  animation: minimizar 0.1s ease-in;
+.props-enter-from {
+  /*delays the v-show=false (display: none) to show the inputs getting clipped*/
+  animation: delay 0.1s linear;
 }
 
+.buscador[minimizado]:not([first_render]) {
+  animation: minimizar 0.1s linear;
+}
 @keyframes minimizar {
   from { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); }
-  to   { clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%); }
+  to   { clip-path: polygon(0% 0%, 100% 0%, 100% 22%, 0% 22%); }
+}
+.props-leave-active {
+  animation: delay 0.1s linear;
+}
+
+@keyframes delay {
+  from { display: block; }
+  to   { display: none; }
 }

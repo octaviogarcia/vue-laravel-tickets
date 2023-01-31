@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, TransitionGroup } from 'vue';
+import { ref, watch, Transition } from 'vue';
 
 const props = defineProps(['id','values','title']);
 const emit = defineEmits(['change']);
@@ -19,12 +19,16 @@ function value_change(event,prop,validx){
 
 const open = ref(false);
 
+let first_render = ref(true);
+watch(open,function(n_open,o_open){
+  first_render.value = false;//@HACK: avoids triggering animation on load due CSS selector :not
+});
 </script>
 
 <style src="./app.css" scoped></style>
 
 <template>
-  <div :id="props.id" class="div_fondo buscador" :minimizado="open? null : true">
+  <div :id="props.id" class="div_fondo buscador" :minimizado="open? null : true" :first_render="first_render? true : null">
     <div class="title" @click="open=!open">
       <div>{{ props.title ?? 'FILTROS DE BÚSQUEDA' }}&nbsp;&nbsp;&nbsp;{{ open? '⦾':'⦿' }}</div>
     </div>
