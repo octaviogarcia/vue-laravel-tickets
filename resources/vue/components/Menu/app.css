@@ -1,13 +1,13 @@
-#menu{
+.menu{
   width: 100%;
   height: 10%;
   display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
 }
-#menu > * {
+.menu > * {
   flex: 1;
 }
-#ver_usuario {
+.menu .ver_usuario {
   background: rgb(70,120,120);
 }
