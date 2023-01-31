@@ -1,6 +1,5 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue';
-import './app2.css';
 import UintModifier from './UintModifier.vue'
 
 const count = ref(0);//Reactivo
@@ -48,6 +47,8 @@ onMounted(function(){
 });
 
 </script>
+
+<style src="./app2.css" scoped></style>
 
 <template>
   <p>Different view!</p>

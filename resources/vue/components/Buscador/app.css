@@ -1,19 +1,55 @@
-#buscador {
+
+.buscador {
   width: 95%;
   margin: 5px 0px 5px 0px;
+}
+.buscador * {
+  margin: 1;
+}
+.buscador input {
+  width: 100%;
+}
+.buscador select {
+  width: 100%;
+}
+
+.buscador > .title {
+  width: 100%;
+  height: 10%;
+  font-size: 1.2em;
+  cursor: pointer;
+}
+
+.buscador > .props {
   display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
 }
-#buscador > * {
+
+.buscador > .props > * {
   width: 18%;
 }
-#buscador * {
-  margin: 1;
+
+.props-enter-from {
+  clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%);
 }
-#buscador > *  input {
-  width: 100%;
+.props-enter-active {
+  animation: maximizar 0.1s ease-out;
 }
-#buscador > * select {
-  width: 100%;
+
+@keyframes maximizar {
+  from { clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%); }
+  to   { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); }
+}
+
+.props-leave-from {
+  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+}
+.props-leave-active {
+  animation: minimizar 0.1s ease-in;
+}
+
+@keyframes minimizar {
+  from { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); }
+  to   { clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%); }
 }

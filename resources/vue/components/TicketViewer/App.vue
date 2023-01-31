@@ -1,5 +1,4 @@
 <script setup>
-import './app.css';
 import { ref, computed, onMounted,nextTick } from 'vue';
 
 const estados = ['ABIERTO','SOLUCIONADO','CERRADO'];
@@ -257,6 +256,8 @@ onMounted(function(){
   });
 });
 </script>
+
+<style src="./app.css" scoped></style>
 
 <template>
   <div class="ticket_viewer">

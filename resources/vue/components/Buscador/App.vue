@@ -1,8 +1,7 @@
 <script setup>
-import { ref, watch } from 'vue';
-import './app.css'
+import { ref, watch, TransitionGroup } from 'vue';
 
-const props = defineProps(['id','values']);
+const props = defineProps(['id','values','title']);
 const emit = defineEmits(['change']);
 const values = ref(props.values);
 
@@ -17,32 +16,44 @@ function value_change(event,prop,validx){
   rtrn[prop][validx] = event.target.value;
   emit('change',event,rtrn);
 }
+
+const open = ref(false);
+
 </script>
 
+<style src="./app.css" scoped></style>
+
 <template>
-  <div :id="props.id" class="div_fondo">
-    <div v-for="(prop,pidx) in Object.keys(values)" :key="pidx">
-      <div>{{values[prop].name}}</div>
-      <div><!-- @TODO: tratar de usar Dynamic Components  <component :is=""></component> -->
-        <template v-if="values[prop].type == 'input'">
-          <input v-for="(val,validx) in values[prop].vals" 
-          :type="values[prop].input_type"
-          :key="validx"
-          @change="value_change($event,prop,validx)"
-          :value="val">
-        </template>
-        <template v-else-if="values[prop].type == 'select'">
-          <select v-for="(val,validx) in values[prop].vals" 
-          :key="validx"
-          @change="value_change($event,prop,validx)"
-          :value="val">
-          <option v-if="values[prop].options" v-for="(o,oidx) in values[prop].options" :key="oidx" :value="o.val">
-            {{ o.name }}
-          </option>
-        </select>
-        </template>
-        <span v-else>Unknown type</span>
-      </div>
+  <div :id="props.id" class="div_fondo buscador" :minimizado="open? null : true">
+    <div class="title" @click="open=!open">
+      <div>{{ props.title ?? 'FILTROS DE BÚSQUEDA' }}&nbsp;&nbsp;&nbsp;{{ open? '⦾':'⦿' }}</div>
     </div>
+    <Transition name="props">
+      <div class="props" v-show="open">
+        <div class="prop" v-for="(prop,pidx) in Object.keys(values)" :key="pidx">
+          <div>{{values[prop].name}}</div>
+          <div><!-- @TODO: tratar de usar Dynamic Components  <component :is=""></component> -->
+            <template v-if="values[prop].type == 'input'">
+              <input v-for="(val,validx) in values[prop].vals" 
+              :type="values[prop].input_type"
+              :key="validx"
+              @change="value_change($event,prop,validx)"
+              :value="val">
+            </template>
+            <template v-else-if="values[prop].type == 'select'">
+              <select v-for="(val,validx) in values[prop].vals" 
+              :key="validx"
+              @change="value_change($event,prop,validx)"
+              :value="val">
+                <option v-if="values[prop].options" v-for="(o,oidx) in values[prop].options" :key="oidx" :value="o.val">
+                  {{ o.name }}
+                </option>
+              </select>
+            </template>
+            <span v-else>Unknown type</span>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>

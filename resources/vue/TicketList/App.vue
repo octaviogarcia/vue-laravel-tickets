@@ -1,5 +1,4 @@
 <script setup>
-import './app.css';
 import { ref, computed, watch, onMounted,nextTick } from 'vue';
 import WithMenu from '../components/WithMenu/App.vue';
 import Buscador from '../components/Buscador/App.vue';
@@ -68,6 +67,8 @@ function ver_ticket(event,ticket){
 }
 
 </script>
+
+<style src="./app.css" scoped></style>
 
 <template>
   <WithMenu>

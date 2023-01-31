@@ -1,6 +1,5 @@
 <script setup>
 import { ref,computed, watch } from 'vue';
-import './app.css'
 
 const props = defineProps(['id','title','show_modal','minimize_modal']);
 const show_modal = ref(props.show_modal ?? false);
@@ -18,6 +17,8 @@ defineExpose({
   minimize_modal
 });
 </script>
+
+<style src="./app.css" scoped></style>
 
 <template>
   <div :id="props.id" class="modal" :minimizado="minimize_modal? true : null" v-show="show_modal">

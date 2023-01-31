@@ -1,6 +1,7 @@
 <script setup>  
-import './app.css'
 </script>
+
+<style src="./app.css" scoped></style>
 
 <template>
   <div id="menu">

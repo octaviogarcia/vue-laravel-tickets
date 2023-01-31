@@ -1,8 +1,9 @@
 <script setup>
 import '/resources/css/style.css';
-import './app.css';
 import Menu from '../Menu/App.vue';
 </script>
+
+<style src="./app.css" scoped></style>
 
 <template>
   <div id="main">
