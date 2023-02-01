@@ -31,6 +31,7 @@ div {
 button {
   background: rgb(44, 51, 51);
   border: 2px solid rgb(166, 166, 166);
+  cursor: pointer;
 }
 
 button:hover {
@@ -40,6 +41,12 @@ button:hover {
 table {
   border: 2px solid rgb(166, 166, 166);
   background: rgb(44, 51, 51);
+  border-collapse: collapse;
+}
+
+tr:hover td {
+  background: rgb(56,52,150);
+  cursor: pointer;
 }
 
 th {
