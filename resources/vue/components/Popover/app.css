@@ -1,0 +1,9 @@
+.popover {
+  position: fixed;
+  margin: 0;
+  padding: 0;
+  z-index: 1060;
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
+  outline: 0;
+}

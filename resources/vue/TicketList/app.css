@@ -9,5 +9,8 @@
 }
 #tickets {
   width: 90%;
-  border-collapse: collapse;
+}
+
+.acciones button{
+  font-size: 0.9em;
 }

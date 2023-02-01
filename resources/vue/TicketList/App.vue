@@ -3,6 +3,7 @@ import { ref, computed, watch, onMounted,nextTick } from 'vue';
 import WithMenu from '../components/WithMenu/App.vue';
 import Buscador from '../components/Buscador/App.vue';
 import Modal from '../components/Modal/App.vue';
+import Popover from '../components/Popover/App.vue';
 import TicketViewer from '../components/TicketViewer/App.vue';
 
 const estados = [
@@ -28,6 +29,7 @@ const tickets = ref(Array.from({length: 100}, () => Math.floor(Math.random() * 1
 }));
 
 function eliminar(event,ticket,idx){
+  popover_data.value.show = false;
   tickets.value.splice(idx,1)
 }
 
@@ -62,10 +64,29 @@ const modal_ver_ticket_refs = ref({
 });
 
 function ver_ticket(event,ticket){
+  popover_data.value.show = false;
   viewing_ticket.value = ticket.numero;
   modal_ver_ticket_refs.value.show_modal = true;
 }
 
+const popover_data = ref({
+  x: -1000,y: -1000,data: {},show: false,
+});
+
+function show_popover(event,ticket,tidx){
+  event.stopPropagation();
+  popover_data.value.show = true;
+  popover_data.value.x = event.clientX;
+  popover_data.value.y = event.clientY;
+  popover_data.value.data = {
+    ticket: ticket,
+    tidx: tidx
+  };
+}
+
+function hide_popover(event,data){
+  popover_data.value.show = false;
+}
 </script>
 
 <style src="./app.css" scoped></style>
@@ -84,11 +105,10 @@ function ver_ticket(event,ticket){
             <th>Tags</th>
             <th>Creado</th>
             <th>Modificado</th>
-            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(ticket,tidx) in tickets" :key="tidx">
+          <tr v-for="(ticket,tidx) in tickets" :key="tidx" @click="show_popover($event,ticket,tidx)">
             <td>{{ ticket.numero }}</td>
             <td>{{ ticket.titulo }}</td>
             <td>{{ ticket.autor }}</td>
@@ -96,13 +116,6 @@ function ver_ticket(event,ticket){
             <td>{{ (ticket.tags ?? []).join(' ') }}</td>
             <td>{{ ticket.created_at }}</td>
             <td>{{ ticket.modified_at }}</td>
-            <td>
-              <div class="acciones">
-                <button @click="ver_ticket($event,ticket)">VER</button>
-                <!--<a :href="'/ticket_viewer/'+ticket.numero" target="_blank"><button>VER</button></a>-->
-                <button @click="eliminar($event,ticket,tidx)">ELIMINAR</button>
-              </div>
-            </td>
           </tr>
         </tbody>
       </table>
@@ -112,5 +125,11 @@ function ver_ticket(event,ticket){
         <TicketViewer></TicketViewer>
       </div>
     </Modal>
+    <Popover :x="popover_data.x" :y="popover_data.y" v-show="popover_data.show" @click-outside="hide_popover">
+      <div class="acciones">
+        <button style="margin-right: -1px;" @click="ver_ticket($event,popover_data.data.ticket)">VER</button>
+        <button @click="eliminar($event,popover_data.data.ticket,popover_data.data.tidx)">ELIMINAR</button>
+      </div>
+    </Popover>
   </WithMenu>
 </template>
