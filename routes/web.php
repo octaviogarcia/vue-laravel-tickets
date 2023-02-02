@@ -56,11 +56,19 @@ Route::get('/2', function () {
   ]);
 });
 
+function estados(){ return ['ABIERTO','SOLUCIONADO','CERRADO']; };
+
 Route::get('/ticket_viewer/{number?}',function(){
-  return view_with_variables('ticket_viewer',['server_time' => (new DateTimeImmutable())->getTimestamp()]);
+  return view_with_variables('ticket_viewer',[
+    'server_time' => (new DateTimeImmutable())->getTimestamp(),
+    'estados' => estados()
+  ]);
 });
 Route::get('/ticket_list',function(){
-  return view_with_variables('ticket_list',['server_time' => (new DateTimeImmutable())->getTimestamp()]);
+  return view_with_variables('ticket_list',[
+    'server_time' => (new DateTimeImmutable())->getTimestamp(),
+    'estados' => estados(),
+  ]);
 });
 Route::post('/search_tickets',function(){
   $rand_tickets = array_fill(0,random_int(50,100),null);
@@ -69,7 +77,7 @@ Route::post('/search_tickets',function(){
       'numero' => random_int(0,10000),
       'titulo' => 'Titulo'.$idx,
       'autor' => 'Autor'.random_int(0,23),
-      'estado' => ['ABIERTO','SOLUCIONADO','CERRADO'][array_rand(['ABIERTO','SOLUCIONADO','CERRADO'])],
+      'estado' => estados()[array_rand(estados())],
       'tags' => array_map(function(){
         return 'tag'.random_int(0,4);
       },array_fill(0,random_int(0,4),null)),

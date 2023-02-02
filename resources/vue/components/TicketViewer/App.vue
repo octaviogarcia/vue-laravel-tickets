@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted,nextTick } from 'vue';
 
-const estados = ['ABIERTO','SOLUCIONADO','CERRADO'];
+const props = defineProps(['estados']);
 
 const tickets = ref(Array.from({length: 100}, () => Math.floor(Math.random() * 100)).map(function(v,idx){
   function rand(maxnum){
@@ -11,7 +11,7 @@ const tickets = ref(Array.from({length: 100}, () => Math.floor(Math.random() * 1
   const inicial = idx == 0?
   {
     titulo: 'Titulo'+idx,
-    estado: estados[rand(estados.length)],
+    estado: props.estados[rand(props.estados.length)],
     tags: Array.from({length: rand(4)},(v) => 'tag'+rand(4)),
     created_at: new Date(blade_vars.server_time*1000).toLocaleString(),
     modified_at: new Date(blade_vars.server_time*1000).toLocaleString(),
@@ -283,9 +283,7 @@ onMounted(function(){
           <div>Estado</div>
           <div><select style="width: 100%;" v-model="ticket_v.estado" :disabled="!ticket_v.editando">
             <option></option>
-            <option>ABIERTO</option>
-            <option>SOLUCIONADO</option>
-            <option>CERRADO</option>
+            <option v-for="(e,eidx) in props.estados" :key="eidx">{{ e }}</option>
           </select></div>
         </div>
       </div>

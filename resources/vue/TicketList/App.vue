@@ -6,11 +6,11 @@ import Modal from '../components/Modal/App.vue';
 import Popover from '../components/Popover/App.vue';
 import TicketViewer from '../components/TicketViewer/App.vue';
 
-const estados = [
-  {name: 'ABIERTO', val: 'ABIERTO'},
-  {name: 'SOLUCIONADO', val: 'SOLUCIONADO'},
-  {name: 'CERRADO', val: 'CERRADO'}
-];
+const blade_vars_estados = blade_vars.estados;
+const estados = blade_vars_estados.map(function(v){
+  return {name: v, val: v}
+});
+
 
 const tickets = ref([]);
 
@@ -162,7 +162,7 @@ function hide_popover(event,data){
     </div>
     <Modal ref="modal_ver_ticket_refs" :show_modal="modal_ver_ticket_refs.show_modal" id="modalVerTicket" :title="`Ticket #${viewing_ticket}`" >
       <div style="overflow: scroll;height: 100%;width: 100%;padding: 0;margin: 0;">
-        <TicketViewer></TicketViewer>
+        <TicketViewer :estados=blade_vars_estados></TicketViewer>
       </div>
     </Modal>
     <Popover :x="popover_data.x" :y="popover_data.y" v-show="popover_data.show" @click-outside="hide_popover">
