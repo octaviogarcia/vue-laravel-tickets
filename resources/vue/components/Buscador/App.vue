@@ -2,17 +2,26 @@
 import { ref, watch, Transition, onMounted, nextTick } from 'vue';
 
 const props = defineProps(['id','values','title']);
-const values = ref(props.values);
 
-const rtrn = ref({})
-for(const p of Object.keys(props.values)){
-  props.values[p].vals = props.values[p].vals ?? [''];
-  rtrn.value[p] = [...props.values[p].vals];
+function simplify(arr){
+  if(arr.length == 1){
+    return arr[0]
+  }
+  else if(arr.length == 0){
+    return null;
+  }
+  return arr;
 }
 
-function value_change(event,prop,validx){
-  values.value[prop].vals[validx] = event.target.value;
-  rtrn.value[prop][validx] = event.target.value;
+const rtrn = ref({})
+for(const attr of Object.keys(props.values)){
+  props.values[attr].vals = props.values[attr].vals ?? [''];
+  rtrn.value[attr] = simplify(props.values[attr].vals);
+}
+
+function value_change(event,attr,validx){
+  props.values[attr].vals[validx] = event.target.value;
+  rtrn.value[attr] = simplify(props.values[attr].vals);
 }
 
 const open = ref(false);
@@ -34,24 +43,24 @@ defineExpose({
     <div class="title" @click="open=!open">
       <div>{{ props.title ?? 'FILTROS DE BÚSQUEDA' }}&nbsp;&nbsp;&nbsp;{{ open? '⦾':'⦿' }}</div>
     </div>
-    <Transition name="props">
-      <div class="props" v-show="open">
-        <div class="prop" v-for="(prop,pidx) in Object.keys(values)" :key="pidx">
-          <div>{{values[prop].name}}</div>
+    <Transition name="attrs">
+      <div class="attrs" v-show="open">
+        <div class="attr" v-for="(attr,aidx) in Object.keys(values)" :key="aidx">
+          <div>{{values[attr].name}}</div>
           <div><!-- @TODO: tratar de usar Dynamic Components  <component :is=""></component> -->
-            <template v-if="values[prop].type == 'input'">
-              <input v-for="(val,validx) in values[prop].vals" 
-              :type="values[prop].input_type"
+            <template v-if="values[attr].type == 'input'">
+              <input v-for="(val,validx) in values[attr].vals" 
+              :type="values[attr].input_type"
               :key="validx"
-              @change="value_change($event,prop,validx)"
+              @change="value_change($event,attr,validx)"
               :value="val">
             </template>
-            <template v-else-if="values[prop].type == 'select'">
-              <select v-for="(val,validx) in values[prop].vals" 
+            <template v-else-if="values[attr].type == 'select'">
+              <select v-for="(val,validx) in values[attr].vals" 
               :key="validx"
-              @change="value_change($event,prop,validx)"
+              @change="value_change($event,attr,validx)"
               :value="val">
-                <option v-if="values[prop].options" v-for="(o,oidx) in values[prop].options" :key="oidx" :value="o.val">
+                <option v-if="values[attr].options" v-for="(o,oidx) in values[attr].options" :key="oidx" :value="o.val">
                   {{ o.name }}
                 </option>
               </select>

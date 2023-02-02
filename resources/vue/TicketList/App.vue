@@ -73,28 +73,12 @@ const buscador_template = {
 
 const buscador = ref({});
 
-function simplify_vals(obj){
-  const ret = {};
-  for(const attr of Object.keys(obj)){
-    if(obj[attr].length == 1){
-      ret[attr] = obj[attr][0]
-    }
-    else if(obj[attr].length == 0){
-      ret[attr] = null;
-    }
-    else {
-      ret[attr] = obj[attr];
-    }
-  }
-  return ret;
-}
-
 watch(() => ({...buscador.value.rtrn}),buscador_cambio,{deep: true});
 watch(() => ({...order.value}),buscador_cambio,{deep: true});
 
 function buscador_cambio(){
   axios.post('/search_tickets',{
-    ...simplify_vals(buscador.value.rtrn),
+    ...buscador.value.rtrn,
     order: {...order.value},
   })
   .then(function(response){

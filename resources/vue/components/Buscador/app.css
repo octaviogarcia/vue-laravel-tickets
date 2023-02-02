@@ -20,13 +20,13 @@
   cursor: pointer;
 }
 
-.buscador > .props {
+.buscador > .attrs {
   display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
 }
 
-.buscador > .props > * {
+.buscador > .attrs > * {
   width: 18%;
 }
 .buscador:not([first_render]) {
@@ -36,7 +36,7 @@
   from { clip-path: polygon(0% 0%, 100% 0%, 100% 22%, 0% 22%); }
   to   { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); }
 }
-.props-enter-from {
+.attrs-enter-from {
   /*delays the v-show=false (display: none) to show the inputs getting clipped*/
   animation: delay 0.1s linear;
 }
@@ -48,7 +48,7 @@
   from { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); }
   to   { clip-path: polygon(0% 0%, 100% 0%, 100% 22%, 0% 22%); }
 }
-.props-leave-active {
+.attrs-leave-active {
   animation: delay 0.1s linear;
 }
 
