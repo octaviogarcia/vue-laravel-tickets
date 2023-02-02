@@ -1,20 +1,18 @@
 <script setup>
-import { ref, watch, Transition } from 'vue';
+import { ref, watch, Transition, onMounted, nextTick } from 'vue';
 
 const props = defineProps(['id','values','title']);
-const emit = defineEmits(['change']);
 const values = ref(props.values);
 
-const rtrn = {}
+const rtrn = ref({})
 for(const p of Object.keys(props.values)){
   props.values[p].vals = props.values[p].vals ?? [''];
-  rtrn[p] = [...props.values[p].vals];
+  rtrn.value[p] = [...props.values[p].vals];
 }
 
 function value_change(event,prop,validx){
   values.value[prop].vals[validx] = event.target.value;
-  rtrn[prop][validx] = event.target.value;
-  emit('change',event,rtrn);
+  rtrn.value[prop][validx] = event.target.value;
 }
 
 const open = ref(false);
@@ -22,6 +20,10 @@ const open = ref(false);
 let first_render = ref(true);
 watch(open,function(n_open,o_open){
   first_render.value = false;//@HACK: avoids triggering animation on load due CSS selector :not
+});
+
+defineExpose({
+  rtrn,
 });
 </script>
 

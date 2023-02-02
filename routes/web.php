@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 
 
 function view_with_variables(string $viewname,array $vars = []){
+  $vars['_token'] = csrf_token();
   $vars_js = str_replace("\\","\\\\",json_encode($vars));
   $vars_js = "<script>const blade_vars = JSON.parse('"
     .str_replace("'","\'",$vars_js)
@@ -60,5 +61,21 @@ Route::get('/ticket_viewer/{number?}',function(){
 });
 Route::get('/ticket_list',function(){
   return view_with_variables('ticket_list',['server_time' => (new DateTimeImmutable())->getTimestamp()]);
+});
+Route::post('/search_tickets',function(){
+  $rand_tickets = array_fill(0,random_int(50,100),null);
+  return array_map(function($v,$idx){
+    return [
+      'numero' => random_int(0,10000),
+      'titulo' => 'Titulo'.$idx,
+      'autor' => 'Autor'.random_int(0,23),
+      'estado' => ['ABIERTO','SOLUCIONADO','CERRADO'][array_rand(['ABIERTO','SOLUCIONADO','CERRADO'])],
+      'tags' => array_map(function(){
+        return 'tag'.random_int(0,4);
+      },array_fill(0,random_int(0,4),null)),
+      'created_at' => (new DateTime())->format('Y-m-d H:i:s'),
+      'modified_at' => (new DateTime())->format('Y-m-d H:i:s'),
+    ];
+  },$rand_tickets,array_keys($rand_tickets));
 });
 

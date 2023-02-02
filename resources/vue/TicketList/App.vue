@@ -12,31 +12,48 @@ const estados = [
   {name: 'CERRADO', val: 'CERRADO'}
 ];
 
-const tickets = ref(Array.from({length: 100}, () => Math.floor(Math.random() * 100)).map(function(v,idx){
-  function rand(maxnum){
-    const next_pow10 = 10**Math.ceil(Math.log10(maxnum));
-    return Math.floor(Math.random()*next_pow10)%maxnum;
+const tickets = ref([]);
+
+const tickets_v = computed(function(){
+  return tickets.value.map(function(t){
+    return {...t,tags: (t.tags ?? []).join(' ')}
+  });
+});
+
+const columns = {
+  '#': 'numero',Titulo: 'titulo',Autor: 'autor',
+  Estado: 'estado', Tags: 'tags',
+  Creado: 'created_at', Modificado: 'modified_at',
+};
+
+const order = ref({
+  column: null,asc: null
+});
+
+function change_order(event,col){
+  if(order.value.asc === null){
+    order.value.column = col;
+    order.value.asc = true;
   }
-  return {
-    numero: rand(10000),
-    titulo: 'Titulo'+idx,
-    autor: 'Autor'+rand(23),
-    estado: estados[rand(estados.length)].name,
-    tags: Array.from({length: rand(4)},(v) => 'tag'+rand(4)),
-    created_at: new Date(blade_vars.server_time*1000).toLocaleString(),
-    modified_at: new Date(blade_vars.server_time*1000).toLocaleString(),
+  else if(order.value.asc){
+    order.value.column = col;
+    order.value.asc = false;
   }
-}));
+  else {
+    order.value.column = null;
+    order.value.asc = null;
+  }
+}
 
 function eliminar(event,ticket,idx){
   popover_data.value.show = false;
   tickets.value.splice(idx,1)
 }
 
-const buscador = {
+const buscador_template = {
   numero: { name: 'Número', type: 'input' },
   titulo: { name: 'Titulo', type: 'input' },
-  Autor: { name: 'Autor', type: 'input' },
+  autor: { name: 'Autor', type: 'input' },
   estado: {
     name: 'Estado',
     type: 'select',
@@ -54,8 +71,39 @@ const buscador = {
   },
 };
 
-function buscador_cambio(event,test){
-  console.log(test);//@TODO: API request
+const buscador = ref({});
+
+function simplify_vals(obj){
+  const ret = {};
+  for(const attr of Object.keys(obj)){
+    if(obj[attr].length == 1){
+      ret[attr] = obj[attr][0]
+    }
+    else if(obj[attr].length == 0){
+      ret[attr] = null;
+    }
+    else {
+      ret[attr] = obj[attr];
+    }
+  }
+  return ret;
+}
+
+watch(() => ({...buscador.value.rtrn}),buscador_cambio,{deep: true});
+watch(() => ({...order.value}),buscador_cambio,{deep: true});
+
+function buscador_cambio(){
+  axios.post('/search_tickets',{
+    ...simplify_vals(buscador.value.rtrn),
+    order: {...order.value},
+  })
+  .then(function(response){
+    tickets.value = response.data;
+  })
+  .catch(function(error){
+    tickets.value = [];
+    console.log(error);
+  });
 }
 
 const viewing_ticket = ref(null);
@@ -73,13 +121,13 @@ const popover_data = ref({
   x: -1000,y: -1000,data: {},show: false,
 });
 
-function show_popover(event,ticket,tidx){
+function show_popover(event,tidx){
   event.stopPropagation();
   popover_data.value.show = true;
   popover_data.value.x = event.clientX;
   popover_data.value.y = event.clientY;
   popover_data.value.data = {
-    ticket: ticket,
+    ticket: tickets.value[tidx],
     tidx: tidx
   };
 }
@@ -93,29 +141,21 @@ function hide_popover(event,data){
 
 <template>
   <WithMenu>
-    <Buscador id="buscador" :values="buscador" @change="buscador_cambio"></Buscador>
+    <Buscador ref="buscador" :values="buscador_template"></Buscador>
     <div id="div_tickets">
       <table id="tickets">
         <thead>
           <tr>
-            <th>#</th>
-            <th>Titulo</th>
-            <th>Autor</th>
-            <th>Estado</th>
-            <th>Tags</th>
-            <th>Creado</th>
-            <th>Modificado</th>
+            <th v-for="(col,name) in columns" :key="name" @click="change_order($event,col)">
+              {{ name }}{{ col == order.column? (order.asc? '↑' : '↓') : '↕' }}
+            </th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(ticket,tidx) in tickets" :key="tidx" @click="show_popover($event,ticket,tidx)">
-            <td>{{ ticket.numero }}</td>
-            <td>{{ ticket.titulo }}</td>
-            <td>{{ ticket.autor }}</td>
-            <td>{{ ticket.estado }}</td>
-            <td>{{ (ticket.tags ?? []).join(' ') }}</td>
-            <td>{{ ticket.created_at }}</td>
-            <td>{{ ticket.modified_at }}</td>
+          <tr v-for="(tv,tidx) in tickets_v" :key="tidx" @click="show_popover($event,tidx)">
+            <td v-for="(attr,name) in columns" :key="name">
+              {{ tv[attr] }}
+            </td>
           </tr>
         </tbody>
       </table>

@@ -44,7 +44,7 @@ table {
   border-collapse: collapse;
 }
 
-tr:hover td {
+tr:hover td, th:hover {
   background: rgb(56,52,150);
   cursor: pointer;
 }
