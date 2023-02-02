@@ -7,11 +7,6 @@ import Popover from '../components/Popover/App.vue';
 import TicketViewer from '../components/TicketViewer/App.vue';
 
 const blade_vars_estados = blade_vars.estados;
-const estados = blade_vars_estados.map(function(v){
-  return {name: v, val: v}
-});
-
-
 const tickets = ref([]);
 
 const tickets_v = computed(function(){
@@ -59,7 +54,9 @@ const buscador_template = {
     type: 'select',
     options: [    
       {name: '- TODOS -', val: ''},
-      ...estados
+      ...blade_vars_estados.map(function(v){
+        return {name: v, val: v}
+      })
     ],
   },
   tags: { name: 'Tags', type: 'input' },

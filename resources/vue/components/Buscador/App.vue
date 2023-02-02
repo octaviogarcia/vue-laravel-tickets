@@ -45,22 +45,22 @@ defineExpose({
     </div>
     <Transition name="attrs">
       <div class="attrs" v-show="open">
-        <div class="attr" v-for="(attr,aidx) in Object.keys(values)" :key="aidx">
-          <div>{{values[attr].name}}</div>
+        <div class="attr" v-for="(aobj,attr) in values" :key="attr">
+          <div>{{aobj.name}}</div>
           <div><!-- @TODO: tratar de usar Dynamic Components  <component :is=""></component> -->
-            <template v-if="values[attr].type == 'input'">
-              <input v-for="(val,validx) in values[attr].vals" 
-              :type="values[attr].input_type"
+            <template v-if="aobj.type == 'input'">
+              <input v-for="(val,validx) in aobj.vals" 
+              :type="aobj.input_type"
               :key="validx"
               @change="value_change($event,attr,validx)"
               :value="val">
             </template>
-            <template v-else-if="values[attr].type == 'select'">
-              <select v-for="(val,validx) in values[attr].vals" 
+            <template v-else-if="aobj.type == 'select'">
+              <select v-for="(val,validx) in aobj.vals" 
               :key="validx"
               @change="value_change($event,attr,validx)"
               :value="val">
-                <option v-if="values[attr].options" v-for="(o,oidx) in values[attr].options" :key="oidx" :value="o.val">
+                <option v-if="aobj.options" v-for="(o,oidx) in aobj.options" :key="oidx" :value="o.val">
                   {{ o.name }}
                 </option>
               </select>
