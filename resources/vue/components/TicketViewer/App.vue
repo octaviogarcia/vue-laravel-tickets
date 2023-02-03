@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted,nextTick } from 'vue';
+import { ref } from 'vue';
 
 const props = defineProps(['estados']);
 
@@ -40,8 +40,8 @@ function aplicarSeleccion(obj,tidx){
     const seleccion  = selecciones.getRangeAt(rangeIdx);
     const nodoInicio = seleccion.startContainer.parentNode;
     const nodoFin    = seleccion.endContainer.parentNode;
-    if(nodoInicio.closest('.cuerpo') == null || nodoFin.closest('.cuerpo')   == null
-    || nodoInicio.closest(`.ticket[data-tidx="${tidx}"]`) == null || nodoFin.closest(`.ticket[data-tidx="${tidx}"]`) == null){
+    if(nodoInicio.closest('.cuerpo') != tickets_v.value[tidx].cuerpo 
+    || nodoFin.closest('.cuerpo')    != tickets_v.value[tidx].cuerpo){
       return;
     }
     const obj_clone = obj.cloneNode(true);
@@ -245,16 +245,6 @@ function cambio_tag(event,ticket_v,tagidx){
     ticket_v.tags.push('');
   }
 }
-
-onMounted(function(){
-  nextTick(function(){
-    const tickets_nodes = document.querySelectorAll('.ticket_viewer .ticket');
-    for(const idx in tickets_v.value){
-      tickets_v.value[idx].cuerpo = tickets_nodes[idx].querySelector('.cuerpo');
-      tickets_v.value[idx].file_select = tickets_nodes[idx].querySelector('.file_select');
-    }
-  });
-});
 </script>
 
 <style src="./app.css" scoped></style>
@@ -312,7 +302,7 @@ onMounted(function(){
           <input class="colorpicker" type="color" v-model="ticket_v.color">
         </button>
       </div>
-      <div class="cuerpo contenteditable"
+      <div :ref="(el) => { ticket_v.cuerpo = el; }" class="cuerpo contenteditable"
         :contenteditable="ticket_v.editando? true : null"
         v-html="to_html(ticket_v.texto)">
       </div>
@@ -329,7 +319,7 @@ onMounted(function(){
         <button @click="guardar($event,tidx)">{{ ticket_v.editando? 'GUARDAR' : 'EDITAR'}}</button>
         <button v-show="ticket_v.editando" @click="cancelar($event,tidx)">CANCELAR</button>
         <button v-show="ticket_v.editando" @click="adjuntar($event,ticket_v)">ADJUNTAR</button>
-        <input type="file" multiple  
+        <input :ref="(el) => { ticket_v.file_select = el; }" type="file" multiple  
           class="file_select" 
           style="position: absolute; top: -1000px; left: -1000px;visiblity: hidden;"
           @change="seleccionArchivos($event,ticket_v)">
