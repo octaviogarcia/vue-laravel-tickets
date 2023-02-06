@@ -21,7 +21,7 @@ watch(() => props.number,function(){
       'modified_at': '',
     }];
     tickets_v.value = JSON.parse(JSON.stringify(tickets.value));
-    tickets_v.value[0].editando = true;
+    tickets_v.value[0].editing = true;
   }
   else if(props.number){
     axios.get('/get_ticket/'+(props.number ?? ''))
@@ -35,155 +35,14 @@ watch(() => props.number,function(){
   }
 });
 
-function aplicarSeleccion(obj,tidx){
-  const selecciones = window.getSelection();
-  for(let rangeIdx=0;rangeIdx<selecciones.rangeCount;rangeIdx++){
-    const seleccion  = selecciones.getRangeAt(rangeIdx);
-    const nodoInicio = seleccion.startContainer.parentNode;
-    const nodoFin    = seleccion.endContainer.parentNode;
-    if(nodoInicio.closest('.cuerpo') != tickets_v.value[tidx].cuerpo 
-    || nodoFin.closest('.cuerpo')    != tickets_v.value[tidx].cuerpo){
-      return;
-    }
-    const obj_clone = obj.cloneNode(true);
-    obj_clone.appendChild(seleccion.extractContents());
-    seleccion.insertNode(obj_clone);
-  }
-}
-
-const estilos = {
-  parrafo: {
-    elemento: () => document.createElement('div'),
-    tags: () => ['<div>','</div>'],
-  },
-  negrita: {
-    elemento: () => document.createElement('b'),
-    tags: () => ['<b>','</b>'],
-  },
-  cursiva: {
-    elemento: () => document.createElement('i'),
-    tags: () => ['<i>','</i>'],
-  },
-  subrayar: {
-    elemento: () => document.createElement('u'),
-    tags: () => ['<u>','</u>'],
-  },
-  color: {
-    elemento: function(tidx){
-      const span = document.createElement('span');
-      const color_v = tickets_v.value[tidx].color;
-      span.style.color = color_v? color_v : '#000000';
-      return span;
-    },
-    tags: function(texto){
-      return ['<span style="color:'+(texto.color? texto.color : 'white')+';">','</span>'];
-    },
-  },
-}
-const nodeName_a_estilo = {
-    DIV: {
-      to_obj: (node) => ({
-        tipo: 'parrafo',
-        texto: to_json(node),
-      }),
-    },
-    B: {
-      to_obj: (node) => ({
-        tipo: 'negrita',
-        texto: to_json(node)
-      }),
-    },
-    I: {
-      to_obj: (node) => ({
-        tipo: 'cursiva',
-        texto: to_json(node)
-      }),
-    },
-    U: {
-      to_obj: (node) => ({
-        tipo: 'subrayar',
-        texto: to_json(node)
-      }),
-    },
-    SPAN: {
-      to_obj: (node) => ({
-        tipo: 'color',
-        color: node.style.color? node.style.color : 'white',
-        texto: to_json(node)
-      }),
-      estilo: 'color',
-    }
-}
-
-function aplicarEstilo(event,tidx,tipo){
-  return aplicarSeleccion(estilos[tipo].elemento(tidx),tidx);
-}
-
-function to_html(texto){
-  if(typeof texto == 'string') return texto.replaceAll('<','&lt;').replaceAll('>','&gt;');
-  if(typeof texto != 'object') throw 'Type unsupported '+texto;
-  if(Array.isArray(texto)){
-    return texto.map(to_html).join('');
-  }
-  let open  = '';
-  let close = '';
-  if(texto.tipo in estilos){
-    [open,close] = estilos[texto.tipo].tags(texto);
-  }
-  return open+to_html(texto.texto)+close;
-}
-
-function to_json_impl(parent){
-  const json = [];
-  for(const node of parent.childNodes){
-    if(node.nodeName in nodeName_a_estilo){
-      json.push(nodeName_a_estilo[node.nodeName].to_obj(node));
-      continue;
-    }
-    
-    if(node.nodeName == '#text'){
-      if(node.textContent == '') continue;
-      const texto = node.textContent.replaceAll('<','&lt;').replaceAll('>','&gt;')
-      if(parent.childNodes.length == 1){
-        return texto;
-      }
-      json.push(texto);
-      continue;
-    }
-    
-    const texto = node.outerHTML? node.outerHTML : node.textContent;
-    json.push(texto.replaceAll('<','&lt;').replaceAll('>','&gt;'));
-  }
-  return json;
-}
-
-function to_json(cuerpo){
-  if(cuerpo == null) return [];
-  return to_json_impl(cuerpo);
-}
-
 function guardar(event,tidx){
   const ticket_v = tickets_v.value[tidx];
-  const ticket   = tickets.value[tidx];
-  ticket_v.editando = !ticket_v.editando;
-  if(ticket_v.editando && tidx == 0){
-    ticket_v.tags.push('');
-    return;
-  }
-  if(ticket_v.tags){
-    ticket_v.tags = ticket_v.tags.filter((s) => s.length > 0);
-  }
-  
-  const cuerpo = ticket_v.cuerpo;
-  const json = to_json(cuerpo);
-  const html = to_html(json);
-  ticket_v.text       = json;
-  cuerpo.innerHTML    = html;
-  copyObject(ticket_v,ticket,ticket);
-  
+  const ticket   = tickets.value[tidx];  
   axios.post('/save_ticket',tickets.value[tidx])
   .then(function(response){
-    console.log(response);
+    ticket_v.editing = !ticket_v.editing;
+    ticket_v.tags = (ticket_v.tags ?? []).filter((s) => s.length > 0);
+    copyObject(ticket_v,ticket,ticket);
   })
   .catch(function(error){
     console.log(error);
@@ -193,10 +52,8 @@ function guardar(event,tidx){
 function cancelar(event,tidx){
   const ticket_v = tickets_v.value[tidx];
   const ticket   = tickets.value[tidx];
-  ticket_v.editando = false;
   copyObject(ticket,ticket_v,ticket);
-  const html = to_html(ticket_v.text);
-  ticket_v.cuerpo.innerHTML = html;
+  ticket_v.editing = false;
 }
 
 function copyObject(from,to,keysfrom){
@@ -217,7 +74,7 @@ function copyObject(from,to,keysfrom){
 }
 
 function adjuntar(event,ticket_v){
-  if(ticket_v.editando){
+  if(ticket_v.editing){
     ticket_v.file_select.dispatchEvent(new MouseEvent('click'));
   }
 }
@@ -277,12 +134,12 @@ function cambio_tag(event,ticket_v,tagidx){
         </div>
         <div class="cabecera_ticket">
           <div>Title</div>
-          <div><input style="width: 100%;" v-model="ticket_v.title" :disabled="!ticket_v.editando"></div>
+          <div><input style="width: 100%;" v-model="ticket_v.title" :disabled="!ticket_v.editing"></div>
         </div>
         <div class="cabecera_ticket">
           <div>State</div>
           <div>
-            <select style="width: 100%;" v-model="ticket_v.state" :disabled="!ticket_v.editando">
+            <select style="width: 100%;" v-model="ticket_v.state" :disabled="!ticket_v.editing">
               <option v-for="(e,eidx) in props.states" :key="eidx">{{ e }}</option>
             </select>
           </div>
@@ -290,52 +147,52 @@ function cambio_tag(event,ticket_v,tagidx){
       </div>
       <div class="cabecera_ticket">
         <div>Author</div>
-        <div><input style="width: 100%;" v-model="ticket_v.author" :disabled="!ticket_v.editando"></div>
+        <div><input style="width: 100%;" v-model="ticket_v.author" :disabled="!ticket_v.editing"></div>
       </div>
       <div v-if="tidx==0" class="cabecera_ticket">
         <div>Tags</div>
         <div class="taglist">
           <div style="float: left;width: 7em;" v-for="(tag,tagidx) in ticket_v.tags" :key="tagidx" >
             <div class="tag contenteditable" 
-              :contenteditable="ticket_v.editando? true : null"
-              @focusout="cambio_tag($event,ticket_v,tagidx)">{{ tag }}</div>
-            <button v-if="ticket_v.editando && tagidx < (ticket_v.tags.length-1)" class="cruz_borrar" @click="ticket_v.tags.splice(tagidx,1)">×</button>
+              :contenteditable="ticket_v.editing? true : null"
+              @focusout="(ev) => ticket_v.tags[tagidx] = ev.target.innerHTML"
+              v-html="tag">
+            </div>
+            <button class="cruz_borrar" @click="ticket_v.tags.splice(tagidx,1)" v-if="ticket_v.editing">×</button>
+          </div>
+          <div style="float: left;width: 7em;" v-if="ticket_v.editing">
+            <div class="tag contenteditable" 
+              :contenteditable="ticket_v.editing? true : null"
+              @focusout="(ev) => {ticket_v.tags.push(ev.target.innerHTML);ev.target.innerHTML='';}">
+            </div>
           </div>
         </div>
       </div>
       <hr style="width: 97%;">
-      <div class="enriquecer">
-        <button @click="aplicarEstilo($event,tidx,'negrita')" v-show="ticket_v.editando"><b>N</b></button>
-        <button @click="aplicarEstilo($event,tidx,'cursiva')" v-show="ticket_v.editando"><i>Curs</i></button>
-        <button @click="aplicarEstilo($event,tidx,'subrayar')" v-show="ticket_v.editando"><u>Sub</u></button>
-        <button @click="aplicarEstilo($event,tidx,'color')" v-show="ticket_v.editando">
-          <span>Color</span>
-          <input class="colorpicker" type="color" v-model="ticket_v.color">
-        </button>
-      </div>
-      <div :ref="(el) => { ticket_v.cuerpo = el; }" class="cuerpo contenteditable"
-        :contenteditable="ticket_v.editando? true : null"
-        v-html="to_html(ticket_v.text)">
+      <div class="contenteditable cuerpo"
+        :contenteditable="ticket_v.editing? true : null"
+        @focusout="(ev) => ticket_v.text = ev.target.innerHTML"
+        v-html="ticket_v.text">
       </div>
       <div v-show="(ticket_v.files ?? []).length">
         <div>Files</div>
         <div>
           <div class="archivo" v-for="(f,fidx) in ticket_v.files">
             <a :href="f.url" target="_blank" :title="f.title" :download="f.name">{{ f.name }}</a>
-            <button v-if="ticket_v.editando" class="cruz_borrar" @click="ticket_v.files.splice(fidx,1)">×</button>
+            <button v-if="ticket_v.editing" class="cruz_borrar" @click="ticket_v.files.splice(fidx,1)">×</button>
           </div>
         </div>
       </div>
       <div class="acciones">
-        <button @click="guardar($event,tidx)">{{ ticket_v.editando? 'SAVE' : 'EDIT'}}</button>
-        <button v-show="ticket_v.editando" @click="cancelar($event,tidx)">CANCEL</button>
-        <button v-show="ticket_v.editando" @click="adjuntar($event,ticket_v)">Attach</button>
+        <button @click="guardar($event,tidx)">{{ ticket_v.editing? 'SAVE' : 'EDIT'}}</button>
+        <button v-show="ticket_v.editing" @click="cancelar($event,tidx)">CANCEL</button>
+        <button v-show="ticket_v.editing" @click="adjuntar($event,ticket_v)">ATTACH</button>
         <input :ref="(el) => { ticket_v.file_select = el; }" type="file" multiple  
           class="file_select" 
           style="position: absolute; top: -1000px; left: -1000px;visiblity: hidden;"
           @change="seleccionArchivos($event,ticket_v)">
-        <button v-show="ticket_v.editando">DELETE</button>
-        <button v-show="!ticket_v.editando">HISTORY</button>
+        <button v-show="ticket_v.editing">DELETE</button>
+        <button v-show="!ticket_v.editing">HISTORY</button>
       </div>
     </div>
   </div>

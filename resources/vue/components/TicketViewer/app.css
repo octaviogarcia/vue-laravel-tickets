@@ -52,7 +52,7 @@
   display: inline-block;
 }
 
-.ticket_viewer .ticket .taglist > *:last-of-type [contenteditable]{
+.ticket_viewer .ticket .taglist .tag[contenteditable]:last-child{
   background: rgb(56,70,60);
 }
 
