@@ -7,18 +7,33 @@ const tickets = ref([]);
 const tickets_v = ref([]);
 
 watch(() => props.number,function(){
-  axios.get('/get_ticket/'+(props.number ?? ''))
-  .then(function(response){
-    tickets.value = response.data;
+  if(props.number === null){
+    tickets.value = [{
+      'id': null,
+      'number': '-NEW-',
+      'title': '',
+      'author': '@TODO: USER',
+      'state': props.states[0],
+      'tags': [],
+      'text': '',
+      'files': '',
+      'created_at': '',
+      'modified_at': '',
+    }];
     tickets_v.value = JSON.parse(JSON.stringify(tickets.value));
-  })
-  .catch(function(error){
-    console.log(error);
-  });
+    tickets_v.value[0].editando = true;
+  }
+  else if(props.number){
+    axios.get('/get_ticket/'+(props.number ?? ''))
+    .then(function(response){
+      tickets.value = response.data;
+      tickets_v.value = JSON.parse(JSON.stringify(tickets.value));
+    })
+    .catch(function(error){
+      console.log(error);
+    });
+  }
 });
-
-
-const dateCreacion = new Date(blade_vars.server_time*1000).toLocaleString();
 
 function aplicarSeleccion(obj,tidx){
   const selecciones = window.getSelection();
@@ -189,7 +204,7 @@ function copyObject(from,to,keysfrom){
     if(Array.isArray(from[k])){//Stop using keysfrom and just deepclone
       to[k] = JSON.parse(JSON.stringify(from[k]));
     }
-    else if(typeof from[k] == 'object'){
+    else if(typeof from[k] == 'object' && from[k] !== null){
       if(typeof to[k] != 'object'){
         to[k] = {};
       }
@@ -254,7 +269,7 @@ function cambio_tag(event,ticket_v,tagidx){
         </div>
         <div class="cabecera_ticket">
           <div>Created</div>
-          <div>{{ ticket_v.created_at ?? dateCreacion }}</div>
+          <div>{{ ticket_v.created_at ?? '--' }}</div>
         </div>
         <div class="cabecera_ticket">
           <div>Modified</div>
@@ -266,10 +281,11 @@ function cambio_tag(event,ticket_v,tagidx){
         </div>
         <div class="cabecera_ticket">
           <div>State</div>
-          <div><select style="width: 100%;" v-model="ticket_v.state" :disabled="!ticket_v.editando">
-            <option></option>
-            <option v-for="(e,eidx) in props.states" :key="eidx">{{ e }}</option>
-          </select></div>
+          <div>
+            <select style="width: 100%;" v-model="ticket_v.state" :disabled="!ticket_v.editando">
+              <option v-for="(e,eidx) in props.states" :key="eidx">{{ e }}</option>
+            </select>
+          </div>
         </div>
       </div>
       <div class="cabecera_ticket">
