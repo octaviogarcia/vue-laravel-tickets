@@ -56,28 +56,68 @@ Route::get('/2', function () {
   ]);
 });
 
-function estados(){ return ['ABIERTO','SOLUCIONADO','CERRADO']; };
+function states(){ return ['ABIERTO','SOLUCIONADO','CERRADO']; };
 
 Route::get('/ticket_viewer/{number?}',function(){
   return view_with_variables('ticket_viewer',[
     'server_time' => (new DateTimeImmutable())->getTimestamp(),
-    'estados' => estados()
+    'states' => states()
   ]);
 });
+
+Route::get('/get_ticket/{number?}',function($number = null){
+  if(is_null($number)){
+    return [[
+      'id' => null,
+      'number' => '-NUEVO-',
+      'title' => '',
+      'author' => '-USUARIO-',
+      'state' => 'ABIERTO',
+      'tags' => [],
+      'text' => '',
+      'files' => '',
+      'created_at' => (new DateTime())->format('Y-m-d H:i:s'),
+      'modified_at' => '',
+    ]];
+  }
+  $rand_tickets = array_fill(0,random_int(50,100),null);
+  return array_map(function($v,$idx){
+    return [
+      'id' => random_int(0,1000000),
+      'number' => random_int(0,10000),
+      'title' => 'Titulo'.$idx,
+      'author' => 'Autor'.random_int(0,23),
+      'state' => states()[array_rand(states())],
+      'tags' => array_map(function(){
+        return 'tag'.random_int(0,4);
+      },array_fill(0,random_int(0,4),null)),
+      'text' => 'Textooooooooo'.random_int(0,100),
+      'files' => array_map(function(){
+        return [
+          'name' => 'file'.random_int(0,4).'.jpg',
+          'url' => 'files/route'.random_int(0,4).'.jpg',
+        ];
+      },array_fill(0,random_int(0,4),null)),
+      'created_at' => (new DateTime())->format('Y-m-d H:i:s'),
+      'modified_at' => (new DateTime())->format('Y-m-d H:i:s'),
+    ];
+  },$rand_tickets,array_keys($rand_tickets));
+});
+
 Route::get('/ticket_list',function(){
   return view_with_variables('ticket_list',[
     'server_time' => (new DateTimeImmutable())->getTimestamp(),
-    'estados' => estados(),
+    'states' => states(),
   ]);
 });
 Route::post('/search_tickets',function(){
   $rand_tickets = array_fill(0,random_int(50,100),null);
   return array_map(function($v,$idx){
     return [
-      'numero' => random_int(0,10000),
-      'titulo' => 'Titulo'.$idx,
-      'autor' => 'Autor'.random_int(0,23),
-      'estado' => estados()[array_rand(estados())],
+      'number' => random_int(0,10000),
+      'title' => 'Titulo'.$idx,
+      'author' => 'Autor'.random_int(0,23),
+      'state' => states()[array_rand(states())],
       'tags' => array_map(function(){
         return 'tag'.random_int(0,4);
       },array_fill(0,random_int(0,4),null)),
@@ -87,3 +127,6 @@ Route::post('/search_tickets',function(){
   },$rand_tickets,array_keys($rand_tickets));
 });
 
+Route::post('/save_ticket',function(){
+  return request();
+});

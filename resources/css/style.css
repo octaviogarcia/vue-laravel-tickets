@@ -83,3 +83,16 @@ td:not(:last-of-type),th:not(:last-of-type){
   background: #2c3333;
 }
 
+::-webkit-scrollbar {
+  width: 7px;
+}
+::-webkit-scrollbar-track {
+  background: rgb(67, 78, 81);
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(100,150,150);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(200,156,152);
+}
+

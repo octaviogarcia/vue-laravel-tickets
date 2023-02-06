@@ -1,13 +1,13 @@
 <script setup>
 import WithMenu from '../components/WithMenu/App.vue';
 import TicketViewer from '../components/TicketViewer/App.vue';
-const estados = blade_vars.estados;
+const states = blade_vars.states;
 </script>
 
 <style src="./app.css" scoped></style>
 
 <template>
   <WithMenu>
-    <TicketViewer :estados=estados></TicketViewer>
+    <TicketViewer :states=states></TicketViewer>
   </WithMenu>
 </template>

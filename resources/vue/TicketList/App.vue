@@ -6,7 +6,7 @@ import Modal from '../components/Modal/App.vue';
 import Popover from '../components/Popover/App.vue';
 import TicketViewer from '../components/TicketViewer/App.vue';
 
-const blade_vars_estados = blade_vars.estados;
+const blade_vars_states = blade_vars.states;
 const tickets = ref([]);
 
 const tickets_v = computed(function(){
@@ -16,9 +16,9 @@ const tickets_v = computed(function(){
 });
 
 const columns = {
-  '#': 'numero',Titulo: 'titulo',Autor: 'autor',
-  Estado: 'estado', Tags: 'tags',
-  Creado: 'created_at', Modificado: 'modified_at',
+  '#': 'number',Title: 'title',Author: 'author',
+  State: 'state', Tags: 'tags',
+  Created: 'created_at', Modified: 'modified_at',
 };
 
 const order = ref({
@@ -46,25 +46,25 @@ function eliminar(event,ticket,idx){
 }
 
 const buscador_template = {
-  numero: { name: 'Número', type: 'input' },
-  titulo: { name: 'Titulo', type: 'input' },
-  autor: { name: 'Autor', type: 'input' },
+  numero: { name: 'Number', type: 'input' },
+  titulo: { name: 'Title', type: 'input' },
+  autor: { name: 'Author', type: 'input' },
   estado: {
-    name: 'Estado',
+    name: 'State',
     type: 'select',
     options: [    
-      {name: '- TODOS -', val: ''},
-      ...blade_vars_estados.map(function(v){
+      {name: '- ALL -', val: ''},
+      ...blade_vars_states.map(function(v){
         return {name: v, val: v}
       })
     ],
   },
   tags: { name: 'Tags', type: 'input' },
   created_at: {
-    name: 'Creado', type: 'input', input_type: 'date', vals: ['',''],
+    name: 'Created', type: 'input', input_type: 'date', vals: ['',''],
   },
   modified_at: {
-    name: 'Modificado', type: 'input', input_type: 'date', vals: ['',''],
+    name: 'Modified', type: 'input', input_type: 'date', vals: ['',''],
   },
 };
 
@@ -87,14 +87,19 @@ function buscador_cambio(){
   });
 }
 
-const viewing_ticket = ref(null);
+const viewing_ticket = ref(undefined);
+const modal_title = computed(function(){
+  if(viewing_ticket.value !== null)
+    return 'Ticket #'+viewing_ticket.value;
+  return 'New ticket';
+});
 const modal_ver_ticket_refs = ref({
   show_modal: false,
 });
 
 function ver_ticket(event,ticket){
   popover_data.value.show = false;
-  viewing_ticket.value = ticket.numero;
+  viewing_ticket.value = ticket? ticket.number : null;
   modal_ver_ticket_refs.value.show_modal = true;
 }
 
@@ -124,6 +129,7 @@ function hide_popover(event,data){
   <WithMenu>
     <Buscador ref="buscador" :values="buscador_template"></Buscador>
     <div id="div_tickets">
+      <button id="nuevo" @click="ver_ticket($event,nuevo)">NEW</button>
       <table id="tickets">
         <thead>
           <tr>
@@ -141,9 +147,9 @@ function hide_popover(event,data){
         </tbody>
       </table>
     </div>
-    <Modal ref="modal_ver_ticket_refs" :show_modal="modal_ver_ticket_refs.show_modal" id="modalVerTicket" :title="`Ticket #${viewing_ticket}`" >
+    <Modal ref="modal_ver_ticket_refs" :show_modal="modal_ver_ticket_refs.show_modal" id="modalVerTicket" :title=modal_title >
       <div style="overflow: scroll;height: 100%;width: 100%;padding: 0;margin: 0;">
-        <TicketViewer :estados=blade_vars_estados></TicketViewer>
+        <TicketViewer :number=viewing_ticket :states=blade_vars_states></TicketViewer>
       </div>
     </Modal>
     <Popover :x="popover_data.x" :y="popover_data.y" v-show="popover_data.show" @click-outside="hide_popover">

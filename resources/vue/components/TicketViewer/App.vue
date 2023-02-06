@@ -1,36 +1,22 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
-const props = defineProps(['estados']);
+const props = defineProps(['states','number']);
 
-const tickets = ref(Array.from({length: 100}, () => Math.floor(Math.random() * 100)).map(function(v,idx){
-  function rand(maxnum){
-    const next_pow10 = 10**Math.ceil(Math.log10(maxnum));
-    return Math.floor(Math.random()*next_pow10)%maxnum;
-  }
-  const inicial = idx == 0?
-  {
-    titulo: 'Titulo'+idx,
-    estado: props.estados[rand(props.estados.length)],
-    tags: Array.from({length: rand(4)},(v) => 'tag'+rand(4)),
-    created_at: new Date(blade_vars.server_time*1000).toLocaleString(),
-    modified_at: new Date(blade_vars.server_time*1000).toLocaleString(),
-  } : {};
-  return {
-    numero: rand(10000),
-    autor: 'Autor'+rand(23),
-    texto: 'Textooooooooo'+rand(100),
-    ...inicial,
-    archivos: Array.from({length: rand(4)},(v) => (
-      {
-        nombre:'archivo'+rand(4)+'.jpg',
-        url: 'archivos/ruta'+rand(4)+'.jpg',
-      }
-    ))
-  };
-}));
+const tickets = ref([]);
+const tickets_v = ref([]);
 
-const tickets_v = ref(JSON.parse(JSON.stringify(tickets.value)));
+watch(() => props.number,function(){
+  axios.get('/get_ticket/'+(props.number ?? ''))
+  .then(function(response){
+    tickets.value = response.data;
+    tickets_v.value = JSON.parse(JSON.stringify(tickets.value));
+  })
+  .catch(function(error){
+    console.log(error);
+  });
+});
+
 
 const dateCreacion = new Date(blade_vars.server_time*1000).toLocaleString();
 
@@ -169,15 +155,24 @@ function guardar(event,tidx){
     ticket_v.tags.push('');
     return;
   }
-  const cuerpo = ticket_v.cuerpo;
-  const json = to_json(cuerpo);
-  const html = to_html(json);
-  ticket_v.texto      = json;
-  cuerpo.innerHTML    = html;
   if(ticket_v.tags){
     ticket_v.tags = ticket_v.tags.filter((s) => s.length > 0);
   }
+  
+  const cuerpo = ticket_v.cuerpo;
+  const json = to_json(cuerpo);
+  const html = to_html(json);
+  ticket_v.text       = json;
+  cuerpo.innerHTML    = html;
   copyObject(ticket_v,ticket,ticket);
+  
+  axios.post('/save_ticket',tickets.value[tidx])
+  .then(function(response){
+    console.log(response);
+  })
+  .catch(function(error){
+    console.log(error);
+  });
 }
 
 function cancelar(event,tidx){
@@ -185,7 +180,7 @@ function cancelar(event,tidx){
   const ticket   = tickets.value[tidx];
   ticket_v.editando = false;
   copyObject(ticket,ticket_v,ticket);
-  const html = to_html(ticket_v.texto);
+  const html = to_html(ticket_v.text);
   ticket_v.cuerpo.innerHTML = html;
 }
 
@@ -214,8 +209,8 @@ function adjuntar(event,ticket_v){
 
 function seleccionArchivos(event,ticket_v){
   for(const file of (event.target.files ?? [])){
-    if(!ticket_v.archivos){
-      ticket_v.archivos = [];
+    if(!ticket_v.files){
+      ticket_v.files = [];
     }
     
     const reader = new FileReader();
@@ -228,10 +223,10 @@ function seleccionArchivos(event,ticket_v){
       const byteArray = new Uint8Array(byteNumbers);
       const blob = new Blob([byteArray], { type: file.type });
       
-      ticket_v.archivos.push({
-        nombre: file.name,
+      ticket_v.files.push({
+        name: file.name,
         url: window.URL.createObjectURL(blob),
-        nuevo: true,
+        is_new: true,
         file: file,
       });
     }
@@ -254,32 +249,32 @@ function cambio_tag(event,ticket_v,tagidx){
     <div :data-tidx="tidx" class="ticket div_fondo" v-for="(ticket_v,tidx) in tickets_v" :key="tidx">
       <div v-if="tidx==0">
         <div class="cabecera_ticket">
-          <div>Número</div>
-          <div>{{ ticket_v.numero ?? '-NUEVO-' }}</div>
+          <div>Number</div>
+          <div>{{ ticket_v.number ?? '-NUEVO-' }}</div>
         </div>
         <div class="cabecera_ticket">
-          <div>Creado</div>
+          <div>Created</div>
           <div>{{ ticket_v.created_at ?? dateCreacion }}</div>
         </div>
         <div class="cabecera_ticket">
-          <div>Modificado</div>
+          <div>Modified</div>
           <div>{{ ticket_v.modified_at ?? '--'}}</div>
         </div>
         <div class="cabecera_ticket">
-          <div>Titulo</div>
-          <div><input style="width: 100%;" v-model="ticket_v.titulo" :disabled="!ticket_v.editando"></div>
+          <div>Title</div>
+          <div><input style="width: 100%;" v-model="ticket_v.title" :disabled="!ticket_v.editando"></div>
         </div>
         <div class="cabecera_ticket">
-          <div>Estado</div>
-          <div><select style="width: 100%;" v-model="ticket_v.estado" :disabled="!ticket_v.editando">
+          <div>State</div>
+          <div><select style="width: 100%;" v-model="ticket_v.state" :disabled="!ticket_v.editando">
             <option></option>
-            <option v-for="(e,eidx) in props.estados" :key="eidx">{{ e }}</option>
+            <option v-for="(e,eidx) in props.states" :key="eidx">{{ e }}</option>
           </select></div>
         </div>
       </div>
       <div class="cabecera_ticket">
-        <div>Autor</div>
-        <div><input style="width: 100%;" v-model="ticket_v.autor" :disabled="!ticket_v.editando"></div>
+        <div>Author</div>
+        <div><input style="width: 100%;" v-model="ticket_v.author" :disabled="!ticket_v.editando"></div>
       </div>
       <div v-if="tidx==0" class="cabecera_ticket">
         <div>Tags</div>
@@ -304,27 +299,27 @@ function cambio_tag(event,ticket_v,tagidx){
       </div>
       <div :ref="(el) => { ticket_v.cuerpo = el; }" class="cuerpo contenteditable"
         :contenteditable="ticket_v.editando? true : null"
-        v-html="to_html(ticket_v.texto)">
+        v-html="to_html(ticket_v.text)">
       </div>
-      <div v-show="(ticket_v.archivos ?? []).length">
-        <div>Archivos</div>
+      <div v-show="(ticket_v.files ?? []).length">
+        <div>Files</div>
         <div>
-          <div class="archivo" v-for="(a,aidx) in ticket_v.archivos">
-            <a :href="a.url" target="_blank" :title="a.title" :download="a.nombre">{{ a.nombre }}</a>
-            <button v-if="ticket_v.editando" class="cruz_borrar" @click="ticket_v.archivos.splice(aidx,1)">×</button>
+          <div class="archivo" v-for="(f,fidx) in ticket_v.files">
+            <a :href="f.url" target="_blank" :title="f.title" :download="f.name">{{ f.name }}</a>
+            <button v-if="ticket_v.editando" class="cruz_borrar" @click="ticket_v.files.splice(fidx,1)">×</button>
           </div>
         </div>
       </div>
       <div class="acciones">
-        <button @click="guardar($event,tidx)">{{ ticket_v.editando? 'GUARDAR' : 'EDITAR'}}</button>
-        <button v-show="ticket_v.editando" @click="cancelar($event,tidx)">CANCELAR</button>
-        <button v-show="ticket_v.editando" @click="adjuntar($event,ticket_v)">ADJUNTAR</button>
+        <button @click="guardar($event,tidx)">{{ ticket_v.editando? 'SAVE' : 'EDIT'}}</button>
+        <button v-show="ticket_v.editando" @click="cancelar($event,tidx)">CANCEL</button>
+        <button v-show="ticket_v.editando" @click="adjuntar($event,ticket_v)">Attach</button>
         <input :ref="(el) => { ticket_v.file_select = el; }" type="file" multiple  
           class="file_select" 
           style="position: absolute; top: -1000px; left: -1000px;visiblity: hidden;"
           @change="seleccionArchivos($event,ticket_v)">
-        <button v-show="ticket_v.editando">ELIMINAR</button>
-        <button v-show="!ticket_v.editando">HISTORIAL</button>
+        <button v-show="ticket_v.editando">DELETE</button>
+        <button v-show="!ticket_v.editando">HISTORY</button>
       </div>
     </div>
   </div>
