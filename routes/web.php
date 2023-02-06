@@ -79,23 +79,34 @@ Route::get('/ticket_list',function(){
   ]);
 });
 Route::post('/search_tickets',function(){
-  $rand_tickets = array_fill(0,random_int(50,100),null);
-  return array_map(function($v,$idx){
-    return [
-      'number' => random_int(0,10000),
-      'title' => 'Titulo'.$idx,
-      'author' => 'Autor'.random_int(0,23),
-      'state' => states()[array_rand(states())],
-      'tags' => array_map(function(){
-        return 'tag'.random_int(0,4);
-      },array_fill(0,random_int(0,4),null)),
-      'created_at' => (new DateTime())->format('Y-m-d H:i:s'),
-      'modified_at' => (new DateTime())->format('Y-m-d H:i:s'),
-    ];
-  },$rand_tickets,array_keys($rand_tickets));
+  return Ticket::all();
 });
 
 Route::post('/save_ticket',function(){
-  $id = request()->id;
-  return request();
+  return DB::transaction(function(){
+    $t = null;
+    if(request()->id && Ticket::find(request()->id)){
+      $t = Ticket::find(request()->id);
+    }
+    else{
+      $t = new Ticket;
+      while(true){
+        $rint = random_int(0,2147483647);
+        if(Ticket::where('number',$rint)->count() == 0){
+          break;
+        }
+      }
+      $t->number = $rint;
+      $t->parent = $rint;
+      $t->order  = 0;
+    }
+    $t->text = request()->text;
+    $t->title  = request()->title;
+    $t->author = request()->author;
+    $t->status  = request()->status;
+    $t->tags   = json_encode(request()->tags);
+    $t->files  = json_encode(request()->files);
+    $t->save();
+    return $t;
+  });
 });

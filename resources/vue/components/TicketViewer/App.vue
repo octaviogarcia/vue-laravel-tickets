@@ -10,15 +10,15 @@ watch(() => props.number,function(){
   if(props.number === null){
     tickets.value = [{
       'id': null,
-      'number': '-NEW-',
+      'number': null,
       'title': '',
       'author': '@TODO: USER',
-      'state': props.states[0],
+      'status': props.states[0],
       'tags': [],
       'text': '',
       'files': '',
       'created_at': '',
-      'modified_at': '',
+      'updated_at': '',
     }];
     tickets_v.value = JSON.parse(JSON.stringify(tickets.value));
     tickets_v.value[0].editing = true;
@@ -38,7 +38,7 @@ watch(() => props.number,function(){
 function guardar(event,tidx){
   const ticket_v = tickets_v.value[tidx];
   const ticket   = tickets.value[tidx];  
-  axios.post('/save_ticket',tickets.value[tidx])
+  axios.post('/save_ticket',tickets_v.value[tidx])
   .then(function(response){
     ticket_v.editing = !ticket_v.editing;
     ticket_v.tags = (ticket_v.tags ?? []).filter((s) => s.length > 0);
@@ -105,13 +105,6 @@ function seleccionArchivos(event,ticket_v){
     reader.readAsBinaryString(file);
   }
 }
-
-function cambio_tag(event,ticket_v,tagidx){
-  ticket_v.tags[tagidx] = event.target.textContent;
-  if(tagidx == (ticket_v.tags.length-1) && event.target.textContent != ''){
-    ticket_v.tags.push('');
-  }
-}
 </script>
 
 <style src="./app.css" scoped></style>
@@ -122,15 +115,15 @@ function cambio_tag(event,ticket_v,tagidx){
       <div v-if="tidx==0">
         <div class="cabecera_ticket">
           <div>Number</div>
-          <div>{{ ticket_v.number ?? '-NUEVO-' }}</div>
+          <div>{{ ticket_v.number }}</div>
         </div>
         <div class="cabecera_ticket">
           <div>Created</div>
-          <div>{{ ticket_v.created_at ?? '--' }}</div>
+          <div>{{ ticket_v.created_at }}</div>
         </div>
         <div class="cabecera_ticket">
           <div>Modified</div>
-          <div>{{ ticket_v.modified_at ?? '--'}}</div>
+          <div>{{ ticket_v.updated_at }}</div>
         </div>
         <div class="cabecera_ticket">
           <div>Title</div>
@@ -139,7 +132,7 @@ function cambio_tag(event,ticket_v,tagidx){
         <div class="cabecera_ticket">
           <div>State</div>
           <div>
-            <select style="width: 100%;" v-model="ticket_v.state" :disabled="!ticket_v.editing">
+            <select style="width: 100%;" v-model="ticket_v.status" :disabled="!ticket_v.editing">
               <option v-for="(e,eidx) in props.states" :key="eidx">{{ e }}</option>
             </select>
           </div>

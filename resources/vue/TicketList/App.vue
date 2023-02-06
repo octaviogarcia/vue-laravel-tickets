@@ -11,14 +11,15 @@ const tickets = ref([]);
 
 const tickets_v = computed(function(){
   return tickets.value.map(function(t){
-    return {...t,tags: (t.tags ?? []).join(' ')}
+    const tags = JSON.parse(t.tags) ?? [];
+    return {...t,tags: tags.join(' ')}
   });
 });
 
 const columns = {
   '#': 'number',Title: 'title',Author: 'author',
-  State: 'state', Tags: 'tags',
-  Created: 'created_at', Modified: 'modified_at',
+  Status: 'status', Tags: 'tags',
+  Created: 'created_at', Modified: 'updated_at',
 };
 
 const order = ref({
@@ -50,7 +51,7 @@ const buscador_template = {
   titulo: { name: 'Title', type: 'input' },
   autor: { name: 'Author', type: 'input' },
   estado: {
-    name: 'State',
+    name: 'Status',
     type: 'select',
     options: [    
       {name: '- ALL -', val: ''},
@@ -63,7 +64,7 @@ const buscador_template = {
   created_at: {
     name: 'Created', type: 'input', input_type: 'date', vals: ['',''],
   },
-  modified_at: {
+  updated_at: {
     name: 'Modified', type: 'input', input_type: 'date', vals: ['',''],
   },
 };
