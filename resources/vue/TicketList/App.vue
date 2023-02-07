@@ -49,7 +49,7 @@ function eliminar(event,ticket,idx){
 const buscador_template = {
   number: { name: 'Number', type: 'input' },
   title: { name: 'Title', type: 'input' },
-  autor: { name: 'Author', type: 'input' },
+  author: { name: 'Author', type: 'input' },
   status: {
     name: 'Status',
     type: 'select',
