@@ -78,6 +78,7 @@ Route::get('/ticket_list',function(){
     'states' => states(),
   ]);
 });
+
 Route::post('/search_tickets',function(){
   $rules = [];
   $R = request();
@@ -93,22 +94,6 @@ Route::post('/search_tickets',function(){
   if(!empty($R->status)){
     $rules[] = ['status','=',$R->status];
   }
-  if(!empty($R->created_at)){
-    if(!empty($R->created_at[0])){
-      $rules[] = ['created_at','>=',$R->created_at[0]];
-    }
-    if(!empty($R->created_at[1])){
-      $rules[] = ['created_at','<=',$R->created_at[1]];
-    }
-  }
-  if(!empty($R->updated_at)){
-    if(!empty($R->updated_at[0])){
-      $rules[] = ['updated_at','>=',$R->updated_at[0]];
-    }
-    if(!empty($R->created_at[1])){
-      $rules[] = ['updated_at','<=',$R->updated_at[1]];
-    }
-  }
   if(!empty($R->text)){
     $rules[] = ['text','LIKE','%'.$R->text.'%'];
   }
@@ -117,7 +102,25 @@ Route::post('/search_tickets',function(){
   ->where($rules);
   
   if(!empty($R->tags)){
-    $rtrn->whereJsonContains('tags',$R->tags);
+    $rtrn = $rtrn->whereJsonContains('tags',$R->tags);
+  }
+  
+  if(!empty($R->created_at)){
+    if(!empty($R->created_at[0])){
+      $rtrn = $rtrn->whereRaw('created_at >= ?::date',[$R->created_at[0]]);
+    }
+    if(!empty($R->created_at[1])){
+      $rtrn = $rtrn->whereRaw('created_at <= ?::date',[$R->created_at[1]]);
+    }
+  }
+  
+  if(!empty($R->updated_at)){
+    if(!empty($R->updated_at[0])){
+      $rtrn = $rtrn->whereRaw('created_at >= ?::date',[$R->updated_at[0]]);
+    }
+    if(!empty($R->updated_at[1])){
+      $rtrn = $rtrn->whereRaw('created_at <= ?::date',[$R->updated_at[1]]);
+    }
   }
   
   if($R->order && $R->order['column']){
