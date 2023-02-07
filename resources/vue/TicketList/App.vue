@@ -74,7 +74,6 @@ const buscador_template = {
 
 const buscador = ref({});
 
-watch(() => buscador.value.watch_trigger,buscador_cambio,{deep: true});
 watch(() => ({...order.value}),buscador_cambio,{deep: true});
 
 function buscador_cambio(){
@@ -131,7 +130,7 @@ function hide_popover(event,data){
 
 <template>
   <WithMenu>
-    <Buscador ref="buscador" :values="buscador_template"></Buscador>
+    <Buscador ref="buscador" :values="buscador_template" @val-change="buscador_cambio($event)"></Buscador>
     <div id="div_tickets">
       <button id="nuevo" @click="ver_ticket($event,nuevo)">NEW</button>
       <table id="tickets">

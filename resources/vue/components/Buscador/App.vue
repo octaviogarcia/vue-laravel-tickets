@@ -1,7 +1,8 @@
 <script setup>
-import { ref, watch, Transition, onMounted, nextTick } from 'vue';
+import { ref, watch, Transition } from 'vue';
 
 const props = defineProps(['id','values','title']);
+const emit = defineEmits(['val-change']);
 
 function simplify(arr){
   if(arr.length == 1){
@@ -19,12 +20,10 @@ for(const attr of Object.keys(props.values)){
   rtrn.value[attr] = simplify(props.values[attr].vals);
 }
 
-const watch_trigger = ref(0);
-
 function value_change(event,attr,validx){
   props.values[attr].vals[validx] = event.target.value;
   rtrn.value[attr] = simplify(props.values[attr].vals);
-  watch_trigger.value += 1;
+  emit('val-change',event);
 }
 
 const open = ref(false);
@@ -36,8 +35,9 @@ watch(open,function(n_open,o_open){
 
 defineExpose({
   rtrn,
-  watch_trigger
 });
+
+emit('val-change',null);
 </script>
 
 <style src="./app.css" scoped></style>
