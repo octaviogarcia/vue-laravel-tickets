@@ -75,7 +75,7 @@ const buscador_template = {
 const buscador = ref({});
 
 //@TODO: not detecting changes in deep values such as created_at
-watch(() => ({...buscador.value.rtrn}),buscador_cambio,{deep: true});
+watch(() => ({...buscador.value}),buscador_cambio,{deep: true});
 watch(() => ({...order.value}),buscador_cambio,{deep: true});
 
 function buscador_cambio(){

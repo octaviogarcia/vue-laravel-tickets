@@ -116,10 +116,10 @@ Route::post('/search_tickets',function(){
   
   if(!empty($R->updated_at)){
     if(!empty($R->updated_at[0])){
-      $rtrn = $rtrn->whereRaw('created_at >= ?::date',[$R->updated_at[0]]);
+      $rtrn = $rtrn->whereRaw('updated_at >= ?::date',[$R->updated_at[0]]);
     }
     if(!empty($R->updated_at[1])){
-      $rtrn = $rtrn->whereRaw('created_at <= ?::date',[$R->updated_at[1]]);
+      $rtrn = $rtrn->whereRaw('updated_at <= ?::date',[$R->updated_at[1]]);
     }
   }
   
