@@ -79,7 +79,52 @@ Route::get('/ticket_list',function(){
   ]);
 });
 Route::post('/search_tickets',function(){
-  return Ticket::whereColumn('parent','=','number')->get();
+  $rules = [];
+  $R = request();
+  if(!empty($R->number)){
+    $rules[] = ['number','=',$R->number];
+  }
+  if(!empty($R->title)){
+    $rules[] = ['title','LIKE','%'.$R->title.'%'];
+  }
+  if(!empty($R->author)){
+    $rules[] = ['author','LIKE','%'.$R->author.'%'];
+  }
+  if(!empty($R->status)){
+    $rules[] = ['status','=',$R->status];
+  }
+  if(!empty($R->created_at)){
+    if(!empty($R->created_at[0])){
+      $rules[] = ['created_at','>=',$R->created_at[0]];
+    }
+    if(!empty($R->created_at[1])){
+      $rules[] = ['created_at','<=',$R->created_at[1]];
+    }
+  }
+  if(!empty($R->updated_at)){
+    if(!empty($R->updated_at[0])){
+      $rules[] = ['updated_at','>=',$R->updated_at[0]];
+    }
+    if(!empty($R->created_at[1])){
+      $rules[] = ['updated_at','<=',$R->updated_at[1]];
+    }
+  }
+  if(!empty($R->text)){
+    $rules[] = ['text','LIKE','%'.$R->text.'%'];
+  }
+  
+  $rtrn = Ticket::whereColumn('parent','=','number')
+  ->where($rules);
+  
+  if(!empty($R->tags)){
+    $rtrn->whereJsonContains('tags',$R->tags);
+  }
+  
+  if($R->order && $R->order['column']){
+    $rtrn->orderBy($R->order['column'],$R->order['asc']? 'asc' : 'desc');
+  }
+  
+  return $rtrn->get();
 });
 
 Route::post('/save_ticket',function(){

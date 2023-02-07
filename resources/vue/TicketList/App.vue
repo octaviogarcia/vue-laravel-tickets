@@ -47,10 +47,10 @@ function eliminar(event,ticket,idx){
 }
 
 const buscador_template = {
-  numero: { name: 'Number', type: 'input' },
-  titulo: { name: 'Title', type: 'input' },
+  number: { name: 'Number', type: 'input' },
+  title: { name: 'Title', type: 'input' },
   autor: { name: 'Author', type: 'input' },
-  estado: {
+  status: {
     name: 'Status',
     type: 'select',
     options: [    
@@ -60,7 +60,7 @@ const buscador_template = {
       })
     ],
   },
-  tags: { name: 'Tags', type: 'input' },
+  tags: { name: 'Tags @TODO: LIST', type: 'input' },
   created_at: {
     name: 'Created', type: 'input', input_type: 'date', vals: ['',''],
   },
