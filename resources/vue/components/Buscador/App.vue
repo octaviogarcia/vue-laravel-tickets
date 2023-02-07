@@ -18,14 +18,13 @@ for(const attr of Object.keys(props.values)){
   props.values[attr].vals = props.values[attr].vals ?? [''];
   rtrn.value[attr] = simplify(props.values[attr].vals);
 }
-//@HACK: sets a top level simple value to trigger watches on change...
-//maybe just change the watch() paradigm for an 'change' event
-rtrn.value['___watch_trigger'] = 0;
+
+const watch_trigger = ref(0);
 
 function value_change(event,attr,validx){
   props.values[attr].vals[validx] = event.target.value;
   rtrn.value[attr] = simplify(props.values[attr].vals);
-  rtrn.value['___watch_trigger'] += 1;
+  watch_trigger.value += 1;
 }
 
 const open = ref(false);
@@ -37,6 +36,7 @@ watch(open,function(n_open,o_open){
 
 defineExpose({
   rtrn,
+  watch_trigger
 });
 </script>
 
