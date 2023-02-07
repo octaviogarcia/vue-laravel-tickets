@@ -11,7 +11,7 @@ const tickets = ref([]);
 
 const tickets_v = computed(function(){
   return tickets.value.map(function(t){
-    const tags = JSON.parse(t.tags) ?? [];
+    const tags = t.tags ?? [];
     return {...t,tags: tags.join(' ')}
   });
 });
@@ -67,6 +67,9 @@ const buscador_template = {
   updated_at: {
     name: 'Modified', type: 'input', input_type: 'date', vals: ['',''],
   },
+  text: {
+    name: 'Text', type: 'input'
+  }
 };
 
 const buscador = ref({});

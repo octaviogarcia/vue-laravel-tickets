@@ -6,22 +6,31 @@ const props = defineProps(['states','number']);
 const tickets = ref([]);
 const tickets_v = ref([]);
 
+function ticket_vacio(){
+  return {
+    id: null,
+    parent: tickets.value.length? tickets.value[0].number : null,
+    number: null,
+    title: '',
+    author: '@TODO: USER',
+    status: props.states[0],
+    tags: [],
+    text: '',
+    files: [],
+    created_at: '',
+    updated_at: '',
+  };
+}
+
+function agregar_ticket(){
+  tickets.value.push(ticket_vacio());
+  tickets_v.value.push(ticket_vacio());
+  tickets_v.value[tickets_v.value.length-1].editing = true;
+}
+
 watch(() => props.number,function(){
   if(props.number === null){
-    tickets.value = [{
-      'id': null,
-      'number': null,
-      'title': '',
-      'author': '@TODO: USER',
-      'status': props.states[0],
-      'tags': [],
-      'text': '',
-      'files': '',
-      'created_at': '',
-      'updated_at': '',
-    }];
-    tickets_v.value = JSON.parse(JSON.stringify(tickets.value));
-    tickets_v.value[0].editing = true;
+    agregar_ticket();
   }
   else if(props.number){
     axios.get('/get_ticket/'+(props.number ?? ''))
@@ -187,6 +196,9 @@ function seleccionArchivos(event,ticket_v){
         <button v-show="ticket_v.editing">DELETE</button>
         <button v-show="!ticket_v.editing">HISTORY</button>
       </div>
+    </div>
+    <div v-if="tickets.length && tickets[0].number !== null && tickets[0].id !== null">
+      <button @click="agregar_ticket()">AGREGAR</button>
     </div>
   </div>
 </template>

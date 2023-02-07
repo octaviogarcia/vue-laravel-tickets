@@ -79,7 +79,7 @@ Route::get('/ticket_list',function(){
   ]);
 });
 Route::post('/search_tickets',function(){
-  return Ticket::all();
+  return Ticket::whereColumn('parent','=','number')->get();
 });
 
 Route::post('/save_ticket',function(){
@@ -96,16 +96,28 @@ Route::post('/save_ticket',function(){
           break;
         }
       }
+      
       $t->number = $rint;
-      $t->parent = $rint;
-      $t->order  = 0;
+      
+      if(request()->parent !== null){
+        $t->parent = request()->parent;
+        $t->order = max(
+          Ticket::where('parent','=',$t->parent)
+          ->select('order')
+          ->get()->pluck('order')->toArray()
+        ) + 1;
+      }
+      else{
+        $t->parent = $rint;
+        $t->order  = 0;
+      }
     }
     $t->text = request()->text;
     $t->title  = request()->title;
     $t->author = request()->author;
     $t->status  = request()->status;
-    $t->tags   = json_encode(request()->tags);
-    $t->files  = json_encode(request()->files);
+    $t->tags   = request()->tags;
+    $t->files  = request()->files;
     $t->save();
     return $t;
   });
