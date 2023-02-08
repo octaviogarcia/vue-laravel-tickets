@@ -91,6 +91,12 @@ function searcher_change(){
     while(searcher_template.value.tags.vals.length <= 1)
       searcher_template.value.tags.vals.push('');
   }
+  
+  for(const attr of Object.keys({...searcher_template.value})){//Clear errors
+    if(searcher_template.value[attr].error)
+      searcher_template.value[attr].error = '';
+  }
+  
   axios.post('/search_tickets',{
     ...searcher.value.rtrn,
     order: {...order.value},
@@ -100,7 +106,10 @@ function searcher_change(){
   })
   .catch(function(error){
     tickets.value = [];
-    console.log(error);
+    const errors = error.response.data.errors;
+    for(const attr of Object.keys(errors ?? {})){
+      searcher_template.value[attr].error = errors[attr].join('\n ');
+    }
   });
 }
 

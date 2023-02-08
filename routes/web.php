@@ -1,7 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Models\Ticket;
+use Illuminate\Support\Facades\Validator;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -65,7 +66,6 @@ Route::get('/ticket_viewer/{number?}',function(){
   ]);
 });
 
-use App\Models\Ticket;
 
 Route::get('/get_ticket/{number?}',function($number = null){
   return Ticket::where('parent',$number)
@@ -80,8 +80,23 @@ Route::get('/ticket_list',function(){
 });
 
 Route::post('/search_tickets',function(){
-  $rules = [];
   $R = request();
+  Validator::make($R->all(),[
+    'number' => 'nullable|integer',
+    'title' => 'nullable|string',
+    'author' => 'nullable|string',
+    'status' => 'nullable|string',
+    'text' => 'nullable|string',
+    'tags' => 'nullable|array',
+    'tags.*' => 'nullable|string',
+    'created_at' => 'nullable|array',
+    'created_at.*' => 'nullable|date',
+    'updated_at' => 'nullable|array',
+    'updated_at.*' => 'nullable|date',
+  ])->validate();
+  
+  $rules = [];
+  
   if(!empty($R->number)){
     $rules[] = ['number','=',$R->number];
   }
