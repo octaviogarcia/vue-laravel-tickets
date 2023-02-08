@@ -50,6 +50,7 @@
   overflow-y: scroll;
   vertical-align: middle;
   display: inline-block;
+  resize: none;
 }
 
 .ticket_viewer .ticket .taglist .tag[contenteditable]:last-child{

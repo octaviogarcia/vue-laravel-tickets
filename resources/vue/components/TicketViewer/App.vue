@@ -30,6 +30,8 @@ function agregar_ticket(){
 
 watch(() => props.number,function(){
   if(props.number === null){
+    tickets.value   = [];
+    tickets_v.value = [];
     agregar_ticket();
   }
   else if(props.number){
@@ -46,12 +48,17 @@ watch(() => props.number,function(){
 
 function guardar(event,tidx){
   const ticket_v = tickets_v.value[tidx];
+  if(!ticket_v.editing){
+    ticket_v.editing = true;
+    return;
+  }
+  ticket_v.tags = (ticket_v.tags ?? []).filter((s) => (s ?? '').length > 0);
   const ticket   = tickets.value[tidx];  
   axios.post('/save_ticket',tickets_v.value[tidx])
   .then(function(response){
-    ticket_v.editing = !ticket_v.editing;
-    ticket_v.tags = (ticket_v.tags ?? []).filter((s) => s.length > 0);
-    copyObject(ticket_v,ticket,ticket);
+    copyObject(response.data,ticket,ticket);
+    copyObject(response.data,ticket_v,ticket);
+    ticket_v.editing = false;
   })
   .catch(function(error){
     console.log(error);
@@ -155,18 +162,18 @@ function seleccionArchivos(event,ticket_v){
         <div>Tags</div>
         <div class="taglist">
           <div style="float: left;width: 7em;" v-for="(tag,tagidx) in ticket_v.tags" :key="tagidx" >
-            <div class="tag contenteditable" 
+            <textarea class="tag contenteditable" 
               :contenteditable="ticket_v.editing? true : null"
-              @focusout="(ev) => ticket_v.tags[tagidx] = ev.target.innerHTML"
-              v-html="tag">
-            </div>
+              @focusout="(ev) => ticket_v.tags[tagidx] = ev.target.value.trim()"
+              :value="tag">
+            </textarea>
             <button class="cruz_borrar" @click="ticket_v.tags.splice(tagidx,1)" v-if="ticket_v.editing">×</button>
           </div>
           <div style="float: left;width: 7em;" v-if="ticket_v.editing">
-            <div class="tag contenteditable" 
+            <textarea class="tag" 
               :contenteditable="ticket_v.editing? true : null"
-              @focusout="(ev) => {ticket_v.tags.push(ev.target.innerHTML);ev.target.innerHTML='';}">
-            </div>
+              @focusout="(ev) => {ticket_v.tags.push(ev.target.value.trim());ev.target.value='';}">
+            </textarea>
           </div>
         </div>
       </div>

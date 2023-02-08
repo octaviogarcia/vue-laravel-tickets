@@ -46,7 +46,7 @@ function eliminar(event,ticket,idx){
   tickets.value.splice(idx,1)
 }
 
-const buscador_template = {
+const buscador_template = ref({
   number: { name: 'Number', type: 'input' },
   title: { name: 'Title', type: 'input' },
   author: { name: 'Author', type: 'input' },
@@ -60,7 +60,7 @@ const buscador_template = {
       })
     ],
   },
-  tags: { name: 'Tags @TODO: LIST', type: 'input' },
+  tags: { name: 'Tags', type: 'input', vals: ['',''] },
   created_at: {
     name: 'Created', type: 'input', input_type: 'date', vals: ['',''],
   },
@@ -70,13 +70,27 @@ const buscador_template = {
   text: {
     name: 'Text', type: 'input'
   }
-};
+});
 
 const buscador = ref({});
 
 watch(() => ({...order.value}),buscador_cambio,{deep: true});
 
 function buscador_cambio(){
+  if(buscador.value.rtrn?.tags?.filter(function(t){ return t.length > 0; }).length 
+     ==
+     buscador_template.value.tags.vals.length){
+    buscador_template.value.tags.vals.push('');
+  }
+  else{
+    buscador_template.value.tags.vals = buscador_template.value.tags.vals.filter(
+      function(t,tidx){ return t.length > 0; }
+    );
+    buscador_template.value.tags.vals.push('');
+    //@HACK: to avoid getting a simple string value instead of array in rtrn
+    if(buscador_template.value.tags.vals.length <= 1)
+      buscador_template.value.tags.vals.push('');
+  }
   axios.post('/search_tickets',{
     ...buscador.value.rtrn,
     order: {...order.value},

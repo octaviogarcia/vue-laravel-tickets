@@ -101,25 +101,26 @@ Route::post('/search_tickets',function(){
   $rtrn = Ticket::whereColumn('parent','=','number')
   ->where($rules);
   
-  if(!empty($R->tags)){
-    $rtrn = $rtrn->whereJsonContains('tags',$R->tags);
+  $tags = array_filter($R->tags ?? [],function($t){ return $t !== null && strlen($t) > 0; });
+  if(!empty($tags)){
+    $rtrn = $rtrn->whereJsonContains('tags',$tags);
   }
   
   if(!empty($R->created_at)){
     if(!empty($R->created_at[0])){
-      $rtrn = $rtrn->whereRaw('created_at >= ?::date',[$R->created_at[0]]);
+      $rtrn = $rtrn->whereDate('created_at','>=',$R->created_at[0]);
     }
     if(!empty($R->created_at[1])){
-      $rtrn = $rtrn->whereRaw('created_at <= ?::date',[$R->created_at[1]]);
+      $rtrn = $rtrn->whereDate('created_at','<=',$R->created_at[1]);
     }
   }
   
   if(!empty($R->updated_at)){
     if(!empty($R->updated_at[0])){
-      $rtrn = $rtrn->whereRaw('updated_at >= ?::date',[$R->updated_at[0]]);
+      $rtrn = $rtrn->whereDate('updated_at','>=',$R->updated_at[0]);
     }
     if(!empty($R->updated_at[1])){
-      $rtrn = $rtrn->whereRaw('updated_at <= ?::date',[$R->updated_at[1]]);
+      $rtrn = $rtrn->whereDate('updated_at','<=',$R->updated_at[1]);
     }
   }
   
