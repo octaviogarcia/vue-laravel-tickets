@@ -1,38 +1,38 @@
 
-.buscador {
+.searcher {
   width: 95%;
   margin: 5px 0px 5px 0px;
 }
-.buscador * {
+.searcher * {
   margin: 1;
 }
-.buscador input {
+.searcher input {
   width: 100%;
 }
-.buscador select {
+.searcher select {
   width: 100%;
 }
 
-.buscador > .title {
+.searcher > .title {
   width: 100%;
   height: 10%;
   font-size: 1.2em;
   cursor: pointer;
 }
 
-.buscador > .attrs {
+.searcher > .attrs {
   display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
 }
 
-.buscador > .attrs > * {
+.searcher > .attrs > * {
   width: 18%;
 }
-.buscador:not([first_render]) {
-  animation: maximizar 0.1s linear;
+.searcher:not([first_render]) {
+  animation: maximize 0.1s linear;
 }
-@keyframes maximizar {
+@keyframes maximize {
   from { clip-path: polygon(0% 0%, 100% 0%, 100% 22%, 0% 22%); }
   to   { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); }
 }
@@ -41,10 +41,10 @@
   animation: delay 0.1s linear;
 }
 
-.buscador[minimizado]:not([first_render]) {
-  animation: minimizar 0.1s linear;
+.searcher[minimized]:not([first_render]) {
+  animation: minimize 0.1s linear;
 }
-@keyframes minimizar {
+@keyframes minimize {
   from { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); }
   to   { clip-path: polygon(0% 0%, 100% 0%, 100% 22%, 0% 22%); }
 }

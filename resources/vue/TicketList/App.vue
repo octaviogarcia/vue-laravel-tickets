@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted,nextTick } from 'vue';
 import WithMenu from '../components/WithMenu/App.vue';
-import Buscador from '../components/Buscador/App.vue';
+import Searcher from '../components/Searcher/App.vue';
 import Modal from '../components/Modal/App.vue';
 import Popover from '../components/Popover/App.vue';
 import TicketViewer from '../components/TicketViewer/App.vue';
@@ -46,7 +46,7 @@ function eliminar(event,ticket,idx){
   tickets.value.splice(idx,1)
 }
 
-const buscador_template = ref({
+const searcher_template = ref({
   number: { name: 'Number', type: 'input' },
   title: { name: 'Title', type: 'input' },
   author: { name: 'Author', type: 'input' },
@@ -72,27 +72,27 @@ const buscador_template = ref({
   }
 });
 
-const buscador = ref({});
+const searcher = ref({});
 
-watch(() => ({...order.value}),buscador_cambio,{deep: true});
+watch(() => ({...order.value}),searcher_change,{deep: true});
 
-function buscador_cambio(){
-  if(buscador.value.rtrn?.tags?.filter(function(t){ return t.length > 0; }).length 
+function searcher_change(){
+  if(searcher.value.rtrn?.tags?.filter(function(t){ return t.length > 0; }).length 
      ==
-     buscador_template.value.tags.vals.length){
-    buscador_template.value.tags.vals.push('');
+     searcher_template.value.tags.vals.length){
+    searcher_template.value.tags.vals.push('');
   }
   else{
-    buscador_template.value.tags.vals = buscador_template.value.tags.vals.filter(
+    searcher_template.value.tags.vals = searcher_template.value.tags.vals.filter(
       function(t,tidx){ return t.length > 0; }
     );
-    buscador_template.value.tags.vals.push('');
+    searcher_template.value.tags.vals.push('');
     //@HACK: to avoid getting a simple string value instead of array in rtrn
-    if(buscador_template.value.tags.vals.length <= 1)
-      buscador_template.value.tags.vals.push('');
+    while(searcher_template.value.tags.vals.length <= 1)
+      searcher_template.value.tags.vals.push('');
   }
   axios.post('/search_tickets',{
-    ...buscador.value.rtrn,
+    ...searcher.value.rtrn,
     order: {...order.value},
   })
   .then(function(response){
@@ -144,7 +144,7 @@ function hide_popover(event,data){
 
 <template>
   <WithMenu>
-    <Buscador ref="buscador" :values="buscador_template" @val-change="buscador_cambio($event)"></Buscador>
+    <Searcher ref="searcher" :values="searcher_template" @val-change="searcher_change($event)"></Searcher>
     <div id="div_tickets">
       <button id="nuevo" @click="ver_ticket($event,nuevo)">NEW</button>
       <table id="tickets">

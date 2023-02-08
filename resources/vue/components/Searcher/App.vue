@@ -43,9 +43,9 @@ emit('val-change',null);
 <style src="./app.css" scoped></style>
 
 <template>
-  <div :id="props.id" class="div_fondo buscador" :minimizado="open? null : true" :first_render="first_render? true : null">
+  <div :id="props.id" class="div_fondo searcher" :minimized="open? null : true" :first_render="first_render? true : null">
     <div class="title" @click="open=!open">
-      <div>{{ props.title ?? 'FILTROS DE BÚSQUEDA' }}&nbsp;&nbsp;&nbsp;{{ open? '⦾':'⦿' }}</div>
+      <div>{{ props.title ?? 'FILTERS' }}&nbsp;&nbsp;&nbsp;{{ open? '⦾':'⦿' }}</div>
     </div>
     <Transition name="attrs">
       <div class="attrs" v-show="open">
