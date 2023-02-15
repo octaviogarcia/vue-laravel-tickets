@@ -146,17 +146,35 @@ Route::post('/search_tickets',function(){
   return $rtrn->get();
 });
 
+function file_path(int $number,int $id,int $fnumber){
+  return 'tickets/'.$number.'/'.$id.'/'.$fnumber;
+}
+
 Route::post('/save_ticket',function(){
-  return DB::transaction(function(){
+  $R = request();
+  
+  Validator::make($R->all(),[
+    'number'  => 'nullable|integer',
+    'title'   => 'nullable|string',
+    'author'  => 'nullable|string',
+    'status'  => 'nullable|string',
+    'text'    => 'nullable|string',
+    'tags'    => 'nullable|array',
+    'tags.*'  => 'nullable|string',
+    'old_files'   => 'nullable|array',
+    'old_files.*' => 'nullable|string',
+  ])->validate();
+  
+  return DB::transaction(function() use ($R){
     $t = null;
     if(request()->id && Ticket::find(request()->id)){
-      $t = Ticket::find(request()->id);
+      $t = Ticket::find($R->id);
     }
     else{
       $t = new Ticket;
       while(true){
         $rint = random_int(0,2147483647);
-        if(Ticket::where('number',$rint)->count() == 0){
+        if(Ticket::withTrashed->where('number',$rint)->count() == 0){
           break;
         }
       }
@@ -164,7 +182,7 @@ Route::post('/save_ticket',function(){
       $t->number = $rint;
       
       if(request()->parent !== null){
-        $t->parent = request()->parent;
+        $t->parent = $R->parent;
         $t->order = max(
           Ticket::where('parent','=',$t->parent)
           ->select('order')
@@ -176,13 +194,42 @@ Route::post('/save_ticket',function(){
         $t->order  = 0;
       }
     }
-    $t->text = request()->text;
-    $t->title  = request()->title;
-    $t->author = request()->author;
-    $t->status  = request()->status;
-    $t->tags   = request()->tags;
-    $t->files  = request()->files;
+    $t->text   = $R->text;
+    $t->title  = $R->title;
+    $t->author = $R->author;
+    $t->status = $R->status;
+    $t->tags   = $R->tags;
+    
+    $files  = $t->files ?? [];//Initialize if null
+    $old_files = $R->old_files ?? [];
+    
+    //If file is deleted set it to null
+    foreach($files as $idx => $name){
+      if(!in_array($name,$old_files)){
+        $files[$idx] = null;
+      }
+    }
+    
+    $new_files = $R->file('files') ?? [];
+    foreach($new_files as $nf){//Add new files
+      $filenumber = count($files);
+      $filename   = $nf->getClientOriginalName();
+      $files[] = $filename;
+      $nf->storeAs(file_path($t->number,$t->id,$filenumber),$filename);
+    }
+    
+    $t->files = $files;
     $t->save();
     return $t;
   });
+});
+
+Route::get('/ticket_file/{number}/{id}/{fnumber}',function(int $number,int $id,int $fnumber){
+  $R = request();
+  $t = Ticket::withTrashed()->where('number',$R->number)
+  ->where('id',$id)->first();
+  if(is_null($t) || ($fnumber >= count($t->files)) || $t->files[$fnumber] === null){
+    return null;
+  }
+  return Storage::download(file_path($number,$id,$fnumber).'/'.$t->files[$fnumber]);
 });

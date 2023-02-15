@@ -46,6 +46,21 @@ watch(() => props.number,function(){
   }
 });
 
+function buildFormData(formData, data, parentKey) {
+  if (data && typeof data === 'object' && !(data instanceof Date) && !(data instanceof File)) {
+    Object.keys(data).forEach(key => {
+      buildFormData(formData, data[key], parentKey ? `${parentKey}[${key}]` : key);
+    });
+  } else {
+    formData.append(parentKey, data == null ? '' : data);
+  }
+}
+function objToFormData(data) {
+  const formData = new FormData();
+  buildFormData(formData, data);
+  return formData;
+}
+
 function guardar(event,tidx){
   const ticket_v = tickets_v.value[tidx];
   if(!ticket_v.editing){
@@ -54,11 +69,25 @@ function guardar(event,tidx){
   }
   ticket_v.tags = (ticket_v.tags ?? []).filter((s) => (s ?? '').length > 0);
   const ticket   = tickets.value[tidx];  
-  axios.post('/save_ticket',tickets_v.value[tidx])
+  
+  const formDataObj = {};
+  copyObject(ticket_v,formDataObj,ticket);
+  delete formDataObj.files;
+  delete formDataObj.new_files;
+  const formData = objToFormData(formDataObj);
+  
+  for(const f of ticket_v.files){
+    formData.append('old_files[]',f);
+  }
+  for(const f of (ticket_v.new_files ?? [])){
+    formData.append('files[]',f.file,f.name);
+  }
+  
+  axios.post('/save_ticket', formData)
   .then(function(response){
-    copyObject(response.data,ticket,ticket);
-    copyObject(response.data,ticket_v,ticket);
-    ticket_v.editing = false;
+    copyObject(response.data,ticket,response.data);
+    tickets_v.value[tidx] = JSON.parse(JSON.stringify(ticket));
+    tickets_v.value[tidx].editing = false;
   })
   .catch(function(error){
     console.log(error);
@@ -111,10 +140,10 @@ function seleccionArchivos(event,ticket_v){
       const byteArray = new Uint8Array(byteNumbers);
       const blob = new Blob([byteArray], { type: file.type });
       
-      ticket_v.files.push({
+      ticket_v.new_files = ticket_v.new_files ?? [];
+      ticket_v.new_files.push({
         name: file.name,
         url: window.URL.createObjectURL(blob),
-        is_new: true,
         file: file,
       });
     }
@@ -172,7 +201,11 @@ function seleccionArchivos(event,ticket_v){
           <div style="float: left;width: 7em;" v-if="ticket_v.editing">
             <textarea class="tag" 
               :contenteditable="ticket_v.editing? true : null"
-              @focusout="(ev) => {ticket_v.tags.push(ev.target.value.trim());ev.target.value='';}">
+              @focusout="(ev) => {
+                if(ticket_v.tags === null) ticket_v.tags = [];
+                ticket_v.tags.push(ev.target.value.trim());
+                ev.target.value='';
+              }">
             </textarea>
           </div>
         </div>
@@ -183,12 +216,16 @@ function seleccionArchivos(event,ticket_v){
         @focusout="(ev) => ticket_v.text = ev.target.innerHTML"
         v-html="ticket_v.text">
       </div>
-      <div v-show="(ticket_v.files ?? []).length">
+      <div v-show="(ticket_v.files ?? []).length || (ticket_v.new_files ?? []).length">
         <div>Files</div>
         <div>
           <div class="archivo" v-for="(f,fidx) in ticket_v.files">
-            <a :href="f.url" target="_blank" :title="f.title" :download="f.name">{{ f.name }}</a>
+            <a :href="`/ticket_file/${ticket_v.number}/${ticket_v.id}/${fidx}`" target="_blank" :download="f">{{ f }}</a>
             <button v-if="ticket_v.editing" class="cruz_borrar" @click="ticket_v.files.splice(fidx,1)">×</button>
+          </div>
+          <div class="archivo" v-for="(f,fidx) in ticket_v.new_files">
+            <a :href="f.url" target="_blank" :download="f.name">{{ f.name }}</a>
+            <button v-if="ticket_v.editing" class="cruz_borrar" @click="ticket_v.new_files.splice(fidx,1)">×</button>
           </div>
         </div>
       </div>
