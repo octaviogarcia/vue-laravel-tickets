@@ -28,9 +28,17 @@ function view_with_variables(string $viewname,array $vars = []){
 	]);
 }
 
+function states(){ 
+  return ['ABIERTO','SOLUCIONADO','CERRADO']; 
+};
+
+function file_path(int $number,int $id,int $fnumber){
+  return 'tickets/'.$number.'/'.$id.'/'.$fnumber;
+}
+
 Route::get('/login',function(){
   return view_with_variables('login');
-});
+})->name('login');
 
 Route::post('/login',function(){
   $credentials = request()->validate([
@@ -38,15 +46,11 @@ Route::post('/login',function(){
     'password' => ['required'],
   ]);
   
-  $u = User::where('email',$credentials['email'])->first();
-  if(is_null($u)){
-    return response(['message' => 'Incorrect credentials'],401);
-  }
-  $is_correct = password_verify($credentials['password'],$u->password);
-  if($is_correct){
+  if(Auth::attempt($credentials)){
     session()->regenerate();
     return url('ticket_list');
   }
+  
   return response(['message' => 'Incorrect credentials'],401);
 });
 
@@ -66,189 +70,190 @@ Route::post('user_create',function(){
   $u = new User;
   $u->name              = $credentials['name'];
   $u->email             = $credentials['email'];
-  $u->password          = password_hash($credentials['password'], PASSWORD_DEFAULT);
+  $u->password          = Hash::make($credentials['password']);
   $u->email_verified_at = date("c");
   $u->save();
   return 'User created';
+});
+
+Route::get('logout',function(){
+  Auth::logout(Auth::user());
+  return redirect('login');
 });
 
 Route::get('/',function(){
   return redirect('ticket_list');
 });
 
-function states(){ return ['ABIERTO','SOLUCIONADO','CERRADO']; };
-
-Route::get('/ticket_viewer/{number?}',function(){
-  return view_with_variables('ticket_viewer',[
-    'server_time' => (new DateTimeImmutable())->getTimestamp(),
-    'states' => states()
-  ]);
-});
-
-
-Route::get('/get_ticket/{number?}',function($number = null){
-  return Ticket::where('parent',$number)
-  ->orderBy('order','asc')->get();
-});
-
-Route::get('/ticket_list',function(){
-  return view_with_variables('ticket_list',[
-    'server_time' => (new DateTimeImmutable())->getTimestamp(),
-    'states' => states(),
-  ]);
-});
-
-Route::post('/search_tickets',function(){
-  $R = request();
-  Validator::make($R->all(),[
-    'number' => 'nullable|integer',
-    'title' => 'nullable|string',
-    'author' => 'nullable|string',
-    'status' => 'nullable|string',
-    'text' => 'nullable|string',
-    'tags' => 'nullable|array',
-    'tags.*' => 'nullable|string',
-    'created_at' => 'nullable|array',
-    'created_at.*' => 'nullable|date',
-    'updated_at' => 'nullable|array',
-    'updated_at.*' => 'nullable|date',
-  ])->validate();
+Route::group(['middleware' => 'auth'],function(){
+  Route::get('/ticket_viewer/{number?}',function(){
+    return view_with_variables('ticket_viewer',[
+      'server_time' => (new DateTimeImmutable())->getTimestamp(),
+      'states' => states()
+    ]);
+  });
   
-  $rules = [];
+  Route::get('/get_ticket/{number?}',function($number = null){
+    return Ticket::where('parent',$number)
+    ->orderBy('order','asc')->get();
+  });
   
-  if(!empty($R->number)){
-    $rules[] = ['number','=',$R->number];
-  }
-  if(!empty($R->title)){
-    $rules[] = ['title','LIKE','%'.$R->title.'%'];
-  }
-  if(!empty($R->author)){
-    $rules[] = ['author','LIKE','%'.$R->author.'%'];
-  }
-  if(!empty($R->status)){
-    $rules[] = ['status','=',$R->status];
-  }
-  if(!empty($R->text)){
-    $rules[] = ['text','LIKE','%'.$R->text.'%'];
-  }
+  Route::get('/ticket_list',function(){
+    return view_with_variables('ticket_list',[
+      'server_time' => (new DateTimeImmutable())->getTimestamp(),
+      'states' => states(),
+    ]);
+  });
   
-  $rtrn = Ticket::whereColumn('parent','=','number')
-  ->where($rules);
-  
-  $tags = array_filter($R->tags ?? [],function($t){ return $t !== null && strlen($t) > 0; });
-  if(!empty($tags)){
-    $rtrn = $rtrn->whereJsonContains('tags',$tags);
-  }
-  
-  if(!empty($R->created_at)){
-    if(!empty($R->created_at[0])){
-      $rtrn = $rtrn->whereDate('created_at','>=',$R->created_at[0]);
+  Route::post('/search_tickets',function(){
+    $R = request();
+    Validator::make($R->all(),[
+      'number' => 'nullable|integer',
+      'title' => 'nullable|string',
+      'author' => 'nullable|string',
+      'status' => 'nullable|string',
+      'text' => 'nullable|string',
+      'tags' => 'nullable|array',
+      'tags.*' => 'nullable|string',
+      'created_at' => 'nullable|array',
+      'created_at.*' => 'nullable|date',
+      'updated_at' => 'nullable|array',
+      'updated_at.*' => 'nullable|date',
+    ])->validate();
+    
+    $rules = [];
+    
+    if(!empty($R->number)){
+      $rules[] = ['number','=',$R->number];
     }
-    if(!empty($R->created_at[1])){
-      $rtrn = $rtrn->whereDate('created_at','<=',$R->created_at[1]);
+    if(!empty($R->title)){
+      $rules[] = ['title','LIKE','%'.$R->title.'%'];
     }
-  }
-  
-  if(!empty($R->updated_at)){
-    if(!empty($R->updated_at[0])){
-      $rtrn = $rtrn->whereDate('updated_at','>=',$R->updated_at[0]);
+    if(!empty($R->author)){
+      $rules[] = ['author','LIKE','%'.$R->author.'%'];
     }
-    if(!empty($R->updated_at[1])){
-      $rtrn = $rtrn->whereDate('updated_at','<=',$R->updated_at[1]);
+    if(!empty($R->status)){
+      $rules[] = ['status','=',$R->status];
     }
-  }
-  
-  if($R->order && $R->order['column']){
-    $rtrn->orderBy($R->order['column'],$R->order['asc']? 'asc' : 'desc');
-  }
-  
-  return $rtrn->get();
-});
+    if(!empty($R->text)){
+      $rules[] = ['text','LIKE','%'.$R->text.'%'];
+    }
+    
+    $rtrn = Ticket::whereColumn('parent','=','number')
+    ->where($rules);
+    
+    $tags = array_filter($R->tags ?? [],function($t){ return $t !== null && strlen($t) > 0; });
+    if(!empty($tags)){
+      $rtrn = $rtrn->whereJsonContains('tags',$tags);
+    }
+    
+    if(!empty($R->created_at)){
+      if(!empty($R->created_at[0])){
+        $rtrn = $rtrn->whereDate('created_at','>=',$R->created_at[0]);
+      }
+      if(!empty($R->created_at[1])){
+        $rtrn = $rtrn->whereDate('created_at','<=',$R->created_at[1]);
+      }
+    }
+    
+    if(!empty($R->updated_at)){
+      if(!empty($R->updated_at[0])){
+        $rtrn = $rtrn->whereDate('updated_at','>=',$R->updated_at[0]);
+      }
+      if(!empty($R->updated_at[1])){
+        $rtrn = $rtrn->whereDate('updated_at','<=',$R->updated_at[1]);
+      }
+    }
+    
+    if($R->order && $R->order['column']){
+      $rtrn->orderBy($R->order['column'],$R->order['asc']? 'asc' : 'desc');
+    }
+    
+    return $rtrn->get();
+  });
 
-function file_path(int $number,int $id,int $fnumber){
-  return 'tickets/'.$number.'/'.$id.'/'.$fnumber;
-}
-
-Route::post('/save_ticket',function(){
-  $R = request();
-  
-  Validator::make($R->all(),[
-    'number'  => 'nullable|integer',
-    'title'   => 'nullable|string',
-    'author'  => 'nullable|string',
-    'status'  => 'nullable|string',
-    'text'    => 'nullable|string',
-    'tags'    => 'nullable|array',
-    'tags.*'  => 'nullable|string',
-    'old_files'   => 'nullable|array',
-    'old_files.*' => 'nullable|string',
-  ])->validate();
-  
-  return DB::transaction(function() use ($R){
-    $t = null;
-    if(request()->id && Ticket::find(request()->id)){
-      $t = Ticket::find($R->id);
-    }
-    else{
-      $t = new Ticket;
-      while(true){
-        $rint = random_int(0,2147483647);
-        if(Ticket::withTrashed->where('number',$rint)->count() == 0){
-          break;
+  Route::post('/save_ticket',function(){
+    $R = request();
+    
+    Validator::make($R->all(),[
+      'number'  => 'nullable|integer',
+      'title'   => 'nullable|string',
+      'author'  => 'nullable|string',
+      'status'  => 'nullable|string',
+      'text'    => 'nullable|string',
+      'tags'    => 'nullable|array',
+      'tags.*'  => 'nullable|string',
+      'old_files'   => 'nullable|array',
+      'old_files.*' => 'nullable|string',
+    ])->validate();
+    
+    return DB::transaction(function() use ($R){
+      $t = null;
+      if(request()->id && Ticket::find(request()->id)){
+        $t = Ticket::find($R->id);
+      }
+      else{
+        $t = new Ticket;
+        while(true){
+          $rint = random_int(0,2147483647);
+          if(Ticket::withTrashed->where('number',$rint)->count() == 0){
+            break;
+          }
+        }
+        
+        $t->number = $rint;
+        
+        if(request()->parent !== null){
+          $t->parent = $R->parent;
+          $t->order = max(
+            Ticket::where('parent','=',$t->parent)
+            ->select('order')
+            ->get()->pluck('order')->toArray()
+          ) + 1;
+        }
+        else{
+          $t->parent = $rint;
+          $t->order  = 0;
+        }
+      }
+      $t->text   = $R->text;
+      $t->title  = $R->title;
+      $t->author = $R->author;
+      $t->status = $R->status;
+      $t->tags   = $R->tags;
+      
+      $files  = $t->files ?? [];//Initialize if null
+      $old_files = $R->old_files ?? [];
+      
+      //If file is deleted set it to null
+      foreach($files as $idx => $name){
+        if(!in_array($name,$old_files)){
+          $files[$idx] = null;
         }
       }
       
-      $t->number = $rint;
+      $new_files = $R->file('files') ?? [];
+      foreach($new_files as $nf){//Add new files
+        $filenumber = count($files);
+        $filename   = $nf->getClientOriginalName();
+        $files[] = $filename;
+        $nf->storeAs(file_path($t->number,$t->id,$filenumber),$filename);
+      }
       
-      if(request()->parent !== null){
-        $t->parent = $R->parent;
-        $t->order = max(
-          Ticket::where('parent','=',$t->parent)
-          ->select('order')
-          ->get()->pluck('order')->toArray()
-        ) + 1;
-      }
-      else{
-        $t->parent = $rint;
-        $t->order  = 0;
-      }
+      $t->files = $files;
+      $t->save();
+      return $t;
+    });
+  });
+
+  Route::get('/ticket_file/{number}/{id}/{fnumber}',function(int $number,int $id,int $fnumber){
+    $R = request();
+    $t = Ticket::withTrashed()->where('number',$R->number)
+    ->where('id',$id)->first();
+    if(is_null($t) || ($fnumber >= count($t->files)) || $t->files[$fnumber] === null){
+      return null;
     }
-    $t->text   = $R->text;
-    $t->title  = $R->title;
-    $t->author = $R->author;
-    $t->status = $R->status;
-    $t->tags   = $R->tags;
-    
-    $files  = $t->files ?? [];//Initialize if null
-    $old_files = $R->old_files ?? [];
-    
-    //If file is deleted set it to null
-    foreach($files as $idx => $name){
-      if(!in_array($name,$old_files)){
-        $files[$idx] = null;
-      }
-    }
-    
-    $new_files = $R->file('files') ?? [];
-    foreach($new_files as $nf){//Add new files
-      $filenumber = count($files);
-      $filename   = $nf->getClientOriginalName();
-      $files[] = $filename;
-      $nf->storeAs(file_path($t->number,$t->id,$filenumber),$filename);
-    }
-    
-    $t->files = $files;
-    $t->save();
-    return $t;
+    return Storage::download(file_path($number,$id,$fnumber).'/'.$t->files[$fnumber]);
   });
 });
 
-Route::get('/ticket_file/{number}/{id}/{fnumber}',function(int $number,int $id,int $fnumber){
-  $R = request();
-  $t = Ticket::withTrashed()->where('number',$R->number)
-  ->where('id',$id)->first();
-  if(is_null($t) || ($fnumber >= count($t->files)) || $t->files[$fnumber] === null){
-    return null;
-  }
-  return Storage::download(file_path($number,$id,$fnumber).'/'.$t->files[$fnumber]);
-});

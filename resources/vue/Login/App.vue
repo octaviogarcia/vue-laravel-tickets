@@ -55,5 +55,7 @@ function show_response(e1,e2){
     <div v-if="response">
       <p>{{response}}</p>
     </div>
+    <a v-if="!creating_user" href="user_create">Create user</a>
+    <a v-else href="login">Go to login</a>
   </form>
 </template>
