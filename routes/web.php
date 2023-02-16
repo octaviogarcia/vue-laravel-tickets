@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Models\Ticket;
+use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 /*
 |--------------------------------------------------------------------------
@@ -27,34 +28,52 @@ function view_with_variables(string $viewname,array $vars = []){
 	]);
 }
 
-Route::get('/', function () {
-	return view_with_variables('app');
+Route::get('/login',function(){
+  return view_with_variables('login');
 });
 
-Route::get('/2', function () {
-	$object = [
-		'name' => 'My Complex Object',
-		'array' => [
-			1,2,3,4
-		],
-		'object' => [
-			'int' => 1,
-			'string' => 'asd',
-			'empty_array' => [],
-			'null' => null,
-			'boolean' => false,
-			'float' => 1.23,
-		],
-	];
-  return view_with_variables('app2',[
-    'object' => $object,
-    'another_object' => ['name' => 'another object!'],
-    'int_value' => 1,
-    'leak_test' => '\'',
-    'leak_test2' => "'",
-    'leak_test3' => "\\'",
-    'leak_test4' => "\\\'",
+Route::post('/login',function(){
+  $credentials = request()->validate([
+    'email' => ['required', 'email'],
+    'password' => ['required'],
   ]);
+  
+  $u = User::where('email',$credentials['email'])->first();
+  if(is_null($u)){
+    return response(['message' => 'Incorrect credentials'],401);
+  }
+  $is_correct = password_verify($credentials['password'],$u->password);
+  if($is_correct){
+    session()->regenerate();
+    return url('ticket_list');
+  }
+  return response(['message' => 'Incorrect credentials'],401);
+});
+
+Route::get('user_create',function(){
+  return view_with_variables('login',['creating_user' => true]);
+});
+
+Route::post('user_create',function(){
+  $credentials = request()->validate([
+    'email' => ['required', 'email'],
+    'name' => ['required'],
+    'password' => ['required'],
+  ]);
+  if(User::where('email',$credentials['email'])->count() > 0){
+    return response(['message' => 'User exists'],401);
+  }
+  $u = new User;
+  $u->name              = $credentials['name'];
+  $u->email             = $credentials['email'];
+  $u->password          = password_hash($credentials['password'], PASSWORD_DEFAULT);
+  $u->email_verified_at = date("c");
+  $u->save();
+  return 'User created';
+});
+
+Route::get('/',function(){
+  return redirect('ticket_list');
 });
 
 function states(){ return ['ABIERTO','SOLUCIONADO','CERRADO']; };
