@@ -48,7 +48,7 @@ Route::post('/login',function(){
   
   if(Auth::attempt($credentials)){
     session()->regenerate();
-    return url('ticket_list');
+    return ['redirect' => url('ticket_list')];
   }
   
   return response(['message' => 'Incorrect credentials'],401);
@@ -73,7 +73,7 @@ Route::post('user_create',function(){
   $u->password          = Hash::make($credentials['password']);
   $u->email_verified_at = date("c");
   $u->save();
-  return 'User created';
+  return ['message' => 'User created'];
 });
 
 Route::get('logout',function(){
