@@ -220,8 +220,10 @@ function seleccionArchivos(event,ticket_v){
         <div>Files</div>
         <div>
           <div class="archivo" v-for="(f,fidx) in ticket_v.files">
-            <a :href="`/ticket_file/${ticket_v.number}/${ticket_v.id}/${fidx}`" target="_blank" :download="f">{{ f }}</a>
-            <button v-if="ticket_v.editing" class="cruz_borrar" @click="ticket_v.files.splice(fidx,1)">×</button>
+            <template v-if="f">
+              <a :href="`/ticket_file/${ticket_v.number}/${ticket_v.id}/${fidx}`" target="_blank" :download="f">{{ f }}</a>
+              <button v-if="ticket_v.editing" class="cruz_borrar" @click="ticket_v.files.splice(fidx,1)">×</button>
+            </template>
           </div>
           <div class="archivo" v-for="(f,fidx) in ticket_v.new_files">
             <a :href="f.url" target="_blank" :download="f.name">{{ f.name }}</a>
