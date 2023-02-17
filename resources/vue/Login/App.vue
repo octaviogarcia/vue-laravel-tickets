@@ -4,19 +4,9 @@ import '/resources/css/style.css';
 import Tooltip from '../components/Tooltip/App.vue';
 
 const creating_user = !!blade_vars.creating_user;
-const request = ref({
-  email: '',
-  c_email: '',
-  name: '',
-  password: '',
-  c_password: '',
-});
+const request = ref({});
 const response = ref('');
-const errors = ref({
-  email: '',
-  name: '',
-  password: '',
-});
+const errors = ref({});
 
 function submit(){
   for(const k of Object.keys({...errors.value})){
