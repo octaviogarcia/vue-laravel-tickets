@@ -196,7 +196,7 @@ Route::group(['middleware' => 'auth'],function(){
         $t = new Ticket;
         while(true){
           $rint = random_int(0,2147483647);
-          if(Ticket::withTrashed->where('number',$rint)->count() == 0){
+          if(Ticket::withTrashed()->where('number',$rint)->count() == 0){
             break;
           }
         }
@@ -222,9 +222,11 @@ Route::group(['middleware' => 'auth'],function(){
       $t->status = $R->status;
       $t->tags   = $R->tags;
       
-      $files  = $t->files ?? [];//Initialize if null
-      $old_files = $R->old_files ?? [];
+      $t->files = $t->files ?? [];//Initialize if null
+      $t->save();//Save because I need the ID
       
+      $old_files = $R->old_files ?? [];
+      $files  = $t->files;
       //If file is deleted set it to null
       foreach($files as $idx => $name){
         if(!in_array($name,$old_files)){
@@ -242,6 +244,7 @@ Route::group(['middleware' => 'auth'],function(){
       
       $t->files = $files;
       $t->save();
+      
       return $t;
     });
   });
@@ -254,6 +257,40 @@ Route::group(['middleware' => 'auth'],function(){
       return null;
     }
     return Storage::download(file_path($number,$id,$fnumber).'/'.$t->files[$fnumber]);
+  });
+});
+
+Route::delete('/delete_ticket/{number}',function(int $number){
+  return DB::transaction(function() use ($number){
+    $t = Ticket::where('number',$number)->first();
+    if(is_null($t)) return 0;
+    $is_parent = $t->parent == $t->number;
+    $t->delete();
+    if(!$is_parent) return 1;
+    
+    $children = Ticket::where('parent',$number)->orderBy('order','asc')->get();
+    if($children->count() == 0) return 1;
+    
+    $next_parent = $children[0];
+    $next_parent->parent = $next_parent->number;
+    $next_parent->save();
+    
+    foreach($children->slice(1) as $child){
+      $child->parent = $next_parent->number;
+    }
+    
+    return 1;
+  });
+});
+
+Route::delete('/delete_parent_ticket/{parent}',function(int $parent){
+  return DB::transaction(function() use ($parent){
+    $ts = Ticket::where('parent',$parent)->get();
+    if(is_null($ts)) return 0;
+    
+    foreach($ts as $t) $t->delete();
+    
+    return 1;
   });
 });
 

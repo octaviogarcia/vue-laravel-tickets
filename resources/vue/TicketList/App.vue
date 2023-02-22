@@ -41,9 +41,16 @@ function change_order(event,col){
   }
 }
 
-function eliminar(event,ticket,idx){
+function delete_ticket(event,ticket,idx){
   popover_data.value.show = false;
-  tickets.value.splice(idx,1)
+  
+  axios.delete('/delete_parent_ticket/'+ticket.number)
+  .then(function(response){
+    tickets.value.splice(idx,1);
+  })
+  .catch(function(error){
+    console.log(error);
+  });
 }
 
 const searcher_template = ref({
@@ -119,14 +126,14 @@ const modal_title = computed(function(){
     return 'Ticket #'+viewing_ticket.value;
   return 'New ticket';
 });
-const modal_ver_ticket_refs = ref({
+const modal_view_ticket = ref({
   show_modal: false,
 });
 
-function ver_ticket(event,ticket){
+function view_ticket(event,ticket){
   popover_data.value.show = false;
   viewing_ticket.value = ticket? ticket.number : null;
-  modal_ver_ticket_refs.value.show_modal = true;
+  modal_view_ticket.value.show_modal = true;
 }
 
 const popover_data = ref({
@@ -155,7 +162,7 @@ function hide_popover(event,data){
   <WithMenu>
     <Searcher ref="searcher" :values="searcher_template" @val-change="searcher_change($event)"></Searcher>
     <div id="div_tickets">
-      <button id="nuevo" @click="ver_ticket($event,nuevo)">NEW</button>
+      <button @click="view_ticket($event)">NEW</button>
       <table id="tickets">
         <thead>
           <tr>
@@ -173,15 +180,15 @@ function hide_popover(event,data){
         </tbody>
       </table>
     </div>
-    <Modal ref="modal_ver_ticket_refs" :show_modal="modal_ver_ticket_refs.show_modal" id="modalVerTicket" :title=modal_title >
+    <Modal ref="modal_view_ticket" :show_modal="modal_view_ticket.show_modal" :title=modal_title >
       <div style="overflow: scroll;height: 100%;width: 100%;padding: 0;margin: 0;">
         <TicketViewer :number=viewing_ticket :states=blade_vars_states></TicketViewer>
       </div>
     </Modal>
     <Popover :x="popover_data.x" :y="popover_data.y" v-show="popover_data.show" @click-outside="hide_popover">
       <div class="acciones">
-        <button style="margin-right: -1px;" @click="ver_ticket($event,popover_data.data.ticket)">VER</button>
-        <button @click="eliminar($event,popover_data.data.ticket,popover_data.data.tidx)">ELIMINAR</button>
+        <button style="margin-right: -1px;" @click="view_ticket($event,popover_data.data.ticket)">VIEW</button>
+        <button @click="delete_ticket($event,popover_data.data.ticket,popover_data.data.tidx)">DELETE</button>
       </div>
     </Popover>
   </WithMenu>

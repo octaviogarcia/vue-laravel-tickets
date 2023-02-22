@@ -22,7 +22,7 @@ function ticket_vacio(){
   };
 }
 
-function agregar_ticket(){
+function add_ticket(){
   tickets.value.push(ticket_vacio());
   tickets_v.value.push(ticket_vacio());
   tickets_v.value[tickets_v.value.length-1].editing = true;
@@ -32,7 +32,7 @@ watch(() => props.number,function(){
   if(props.number === null){
     tickets.value   = [];
     tickets_v.value = [];
-    agregar_ticket();
+    add_ticket();
   }
   else if(props.number){
     axios.get('/get_ticket/'+(props.number ?? ''))
@@ -61,7 +61,7 @@ function objToFormData(data) {
   return formData;
 }
 
-function guardar(event,tidx){
+function save(event,tidx){
   const ticket_v = tickets_v.value[tidx];
   if(!ticket_v.editing){
     ticket_v.editing = true;
@@ -94,9 +94,14 @@ function guardar(event,tidx){
   });
 }
 
-function cancelar(event,tidx){
+function cancel(event,tidx){
   const ticket_v = tickets_v.value[tidx];
   const ticket   = tickets.value[tidx];
+  if(ticket.id === null){
+    tickets_v.value.splice(tidx,1);
+    tickets.value.splice(tidx,1);
+    return;
+  }
   copyObject(ticket,ticket_v,ticket);
   ticket_v.editing = false;
 }
@@ -118,13 +123,13 @@ function copyObject(from,to,keysfrom){
   }
 }
 
-function adjuntar(event,ticket_v){
+function attach(event,ticket_v){
   if(ticket_v.editing){
     ticket_v.file_select.dispatchEvent(new MouseEvent('click'));
   }
 }
 
-function seleccionArchivos(event,ticket_v){
+function selected_files(event,ticket_v){
   for(const file of (event.target.files ?? [])){
     if(!ticket_v.files){
       ticket_v.files = [];
@@ -150,6 +155,17 @@ function seleccionArchivos(event,ticket_v){
     reader.readAsBinaryString(file);
   }
 }
+
+function delete_ticket(event,ticket_v,tidx){
+  axios.delete('/delete_ticket/'+ticket_v.number)
+  .then(function(response){
+    tickets_v.value.splice(tidx,1);
+    tickets.value.splice(tidx,1);
+  })
+  .catch(function(error){
+    console.log(error);
+  });
+}
 </script>
 
 <style src="./app.css" scoped></style>
@@ -157,11 +173,11 @@ function seleccionArchivos(event,ticket_v){
 <template>
   <div class="ticket_viewer">
     <div :data-tidx="tidx" class="ticket div_fondo" v-for="(ticket_v,tidx) in tickets_v" :key="tidx">
+      <div class="cabecera_ticket">
+        <div>Number</div>
+        <div>{{ ticket_v.number }}</div>
+      </div>
       <div v-if="tidx==0">
-        <div class="cabecera_ticket">
-          <div>Number</div>
-          <div>{{ ticket_v.number }}</div>
-        </div>
         <div class="cabecera_ticket">
           <div>Created</div>
           <div>{{ ticket_v.created_at }}</div>
@@ -232,19 +248,18 @@ function seleccionArchivos(event,ticket_v){
         </div>
       </div>
       <div class="acciones">
-        <button @click="guardar($event,tidx)">{{ ticket_v.editing? 'SAVE' : 'EDIT'}}</button>
-        <button v-show="ticket_v.editing" @click="cancelar($event,tidx)">CANCEL</button>
-        <button v-show="ticket_v.editing" @click="adjuntar($event,ticket_v)">ATTACH</button>
+        <button @click="save($event,tidx)">{{ ticket_v.editing? 'SAVE' : 'EDIT'}}</button>
+        <button v-show="ticket_v.editing" @click="cancel($event,tidx)">CANCEL</button>
+        <button v-show="ticket_v.editing" @click="attach($event,ticket_v)">ATTACH</button>
         <input :ref="(el) => { ticket_v.file_select = el; }" type="file" multiple  
           class="file_select" 
           style="position: absolute; top: -1000px; left: -1000px;visiblity: hidden;"
-          @change="seleccionArchivos($event,ticket_v)">
-        <button v-show="ticket_v.editing">DELETE</button>
-        <button v-show="!ticket_v.editing">HISTORY</button>
+          @change="selected_files($event,ticket_v)">
+        <button v-show="ticket_v.editing" @click="delete_ticket($event,ticket_v,tidx)">DELETE</button>
       </div>
     </div>
     <div v-if="tickets.length && tickets[0].number !== null && tickets[0].id !== null">
-      <button @click="agregar_ticket()">AGREGAR</button>
+      <button @click="add_ticket()">ADD</button>
     </div>
   </div>
 </template>
