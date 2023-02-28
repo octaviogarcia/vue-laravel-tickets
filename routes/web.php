@@ -89,7 +89,8 @@ Route::group(['middleware' => 'auth'],function(){
   Route::get('/ticket_viewer/{number?}',function(){
     return view_with_variables('ticket_viewer',[
       'server_time' => (new DateTimeImmutable())->getTimestamp(),
-      'states' => states()
+      'states' => states(),
+      'user' => Auth::user(),
     ]);
   });
   
@@ -102,6 +103,7 @@ Route::group(['middleware' => 'auth'],function(){
     return view_with_variables('ticket_list',[
       'server_time' => (new DateTimeImmutable())->getTimestamp(),
       'states' => states(),
+      'user' => Auth::user(),
     ]);
   });
   
@@ -178,7 +180,6 @@ Route::group(['middleware' => 'auth'],function(){
     Validator::make($R->all(),[
       'number'  => 'nullable|integer',
       'title'   => 'nullable|string',
-      'author'  => 'nullable|string',
       'status'  => 'nullable|string',
       'text'    => 'nullable|string',
       'tags'    => 'nullable|array',
@@ -218,7 +219,7 @@ Route::group(['middleware' => 'auth'],function(){
       }
       $t->text   = $R->text;
       $t->title  = $R->title;
-      $t->author = $R->author;
+      $t->author = Auth::user()->name;
       $t->status = $R->status;
       $t->tags   = $R->tags;
       

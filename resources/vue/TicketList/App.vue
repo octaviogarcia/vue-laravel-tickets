@@ -7,6 +7,7 @@ import Popover from '../components/Popover/App.vue';
 import TicketViewer from '../components/TicketViewer/App.vue';
 
 const blade_vars_states = blade_vars.states;
+const user = blade_vars.user;
 const tickets = ref([]);
 
 const tickets_v = computed(function(){
@@ -159,7 +160,7 @@ function hide_popover(event,data){
 <style src="./app.css" scoped></style>
 
 <template>
-  <WithMenu>
+  <WithMenu :user=user>
     <Searcher ref="searcher" :values="searcher_template" @val-change="searcher_change($event)"></Searcher>
     <div id="div_tickets">
       <button @click="view_ticket($event)">NEW</button>
@@ -182,7 +183,7 @@ function hide_popover(event,data){
     </div>
     <Modal ref="modal_view_ticket" :show_modal="modal_view_ticket.show_modal" :title=modal_title >
       <div style="overflow: scroll;height: 100%;width: 100%;padding: 0;margin: 0;">
-        <TicketViewer :number=viewing_ticket :states=blade_vars_states></TicketViewer>
+        <TicketViewer :number=viewing_ticket :states=blade_vars_states :user=user></TicketViewer>
       </div>
     </Modal>
     <Popover :x="popover_data.x" :y="popover_data.y" v-show="popover_data.show" @click-outside="hide_popover">

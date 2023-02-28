@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 
-const props = defineProps(['states','number']);
+const props = defineProps(['states','number','user']);
 
 const tickets = ref([]);
 const tickets_v = ref([]);
@@ -12,7 +12,7 @@ function ticket_vacio(){
     parent: tickets.value.length? tickets.value[0].number : null,
     number: null,
     title: '',
-    author: '@TODO: USER',
+    author: props.user.name ?? '',
     status: props.states[0],
     tags: [],
     text: '',
@@ -201,7 +201,7 @@ function delete_ticket(event,ticket_v,tidx){
       </div>
       <div class="cabecera_ticket">
         <div>Author</div>
-        <div><input style="width: 100%;" v-model="ticket_v.author" :disabled="!ticket_v.editing"></div>
+        <div>{{ ticket_v.author }}</div>
       </div>
       <div v-if="tidx==0" class="cabecera_ticket">
         <div>Tags</div>
